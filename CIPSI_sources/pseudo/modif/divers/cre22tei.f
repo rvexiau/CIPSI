@@ -1,0 +1,41 @@
+      IMPLICIT REAL*8(A-H,O-Z)
+      CHARACTER*8 APSO
+      DIMENSION Apsl(60),Cpslo(3600),Cpsl(600)
+C
+C     cre22tei.f
+C
+C     THIS PROGRAM READS PSEUDOPOTENTIAL DATA ON FILE 12 (FORMATTED)
+C     "MOLCAS" FORMAT
+C     AND CREATES A FILE 22 (UNFORMATTED) TO BE USED IN CIPSO
+C      
+      OPEN(UNIT=12,FORM='FORMATTED',STATUS='OLD',FILE='W60MWBSO.TXT')
+      OPEN(UNIT=22,FORM='UNFORMATTED',STATUS='NEW',FILE='SONL.TL')
+C
+      xxnor=1.D0
+   1  READ(12,1000,END=9000) APSO,MNO,ZATO
+      WRITE(22) APSO,MNO,ZATO
+      WRITE(6,999) APSO,MNO,ZATO
+      DO Itl=1,MNO
+CTL     READ  (12,1001) N,M,LSYM,XXNOR
+CTL     READ  (12,1002) (A(J),J=1,N)
+CTL     READ  (12,1002) (B(J),J=1,N*M)
+CTL     READ  (12,1002) (C(J),J=1,M)
+        READ(12,*)    Lsym,Nops,Nvois
+        READ(12,1113) (Cpsl(I),I=1,Nvois),
+     *                (Apsl(I),I=1,Nops),(Cpslo(I),I=1,Nops*Nvois) 
+        WRITE  (22) Nops,Nvois,LSYM,xxnor
+        WRITE  (22) (Apsl(J),J=1,Nops)
+        WRITE  (22) (Cpslo(J),J=1,Nops*Nvois)
+        WRITE  (22) (Cpsl(J),J=1,Nvois)
+      END DO
+      GO TO 1
+C
+  999 FORMAT(2X,'ATOMIC NAME=',1X,A8,' MAX.SYMM=',I3,
+     *' NUMBER OF VALENCE ELECTRONS',F5.2)
+ 1000 FORMAT(A8,I4,F10.5)
+ 1001 FORMAT(3I3,F12.8)
+ 1002 FORMAT(4D20.12)
+ 1113 FORMAT(3D20.13)
+ 9000 CONTINUE
+      STOP
+      END

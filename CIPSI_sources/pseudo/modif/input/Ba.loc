@@ -1,0 +1,37 @@
+SYMETRIC	
+ $OCELO NVAL= 1,NCE= 18,
+ FPSTAR=.01D-4,FBSTAR=20.,FPEND=.1,FBEND=.3,
+ SORTIE='MOLCAS',LABEL=
+ ' Ar1e  Toulouse    18  0 Q=0.             ',
+ $END
+ $INPUT OVB=.99, OVP=.99, DMNXP2=1.D-25,DMNXP=1.D-15,
+ LSYM= 1,
+ nbtyp= 0,1,1,1
+ npot=  0,0,0
+ apot= 0.6356,0.3214,0.2403
+ cpot= 16.710,4.874,-0.8427
+ $END
+ $OCELO NVAL= 1,NCE= 18,
+ FPSTAR=.01D-4,FBSTAR=20.,FPEND=.1,FBEND=.3,
+ SORTIE='MOLCAS',LABEL=
+ ' Ar1e  Toulouse    18  0 Q=0.             ',
+ $END
+ $INPUT OVB=.99, OVP=.99, DMNXP2=1.D-25,DMNXP=1.D-15,
+ LSYM= 2,
+ nbtyp= 0,1,1,1
+ npot= 0,0,0
+ apot=  0.6356,0.3214,0.2403
+ cpot= 16.710,4.874,-0.8427
+ $END
+ $OCELO NVAL= 1,NCE= 18,
+ FPSTAR=.01D-4,FBSTAR=20.,FPEND=.1,FBEND=.3,
+ SORTIE='MOLCAS',LABEL=
+ ' Ar1e  Toulouse    18  0 Q=0.             ',
+ $END
+ $INPUT OVB=.99, OVP=.99, DMNXP2=1.D-25,DMNXP=1.D-15,
+ LSYM= 3,
+ nbtyp=0,1,1,1
+ npot=  0,0,0
+ apot=  0.6356,0.3214,0.2403
+ cpot= 16.710,4.874,-0.8427
+ $END

@@ -1,0 +1,70 @@
+SYMETRIC	
+ $OCELO NVAL= 1,NCE= 18,
+ FPSTAR=.01D-4,FBSTAR=20.,FPEND=.1,FBEND=.3,
+ SORTIE='MOLCAS',LABEL=
+ ' Ar1e  Toulouse    18  0 Q=0.             ',
+ $END
+ $INPUT OVB=.99, OVP=.99, DMNXP2=1.D-25,DMNXP=1.D-15,
+ LSYM= 1,
+ nbtyp= 1, 1, 1, 1,
+ npot=  0,
+        0,
+        0,
+        -1,
+ apot= 
+      1.00000000,
+      1.35356000
+      0.21596350
+      0.20738800
+ cpot= 
+      0.00000000,
+      52.799655
+       1.103746
+     -1.427413
+ $END
+ $OCELO NVAL= 1,NCE= 18,
+ FPSTAR=.01D-4,FBSTAR=20.,FPEND=.1,FBEND=.3,
+ SORTIE='MOLCAS',LABEL=
+ ' Ar1e  Toulouse    18  0 Q=0.             ',
+ $END
+ $INPUT OVB=.99, OVP=.99, DMNXP2=1.D-25,DMNXP=1.D-15,
+ LSYM= 2,
+ nbtyp= 1, 1, 1, 1,
+ npot=  0,
+        0,
+        0,
+        -1,
+ apot= 
+      1.00000000,
+      1.35356000
+      0.21596350
+      0.20738800
+ cpot= 
+      0.00000000,
+      52.799655
+       1.103746
+     -1.427413
+ $END
+ $OCELO NVAL= 1,NCE= 18,
+ FPSTAR=.01D-4,FBSTAR=20.,FPEND=.1,FBEND=.3,
+ SORTIE='MOLCAS',LABEL=
+ ' Ar1e  Toulouse    18  0 Q=0.             ',
+ $END
+ $INPUT OVB=.99, OVP=.99, DMNXP2=1.D-25,DMNXP=1.D-15,
+ LSYM= 3,
+ nbtyp= 1, 1, 1, 1,
+ npot=  0,
+        0,
+        0,
+        -1,
+ apot= 
+      1.00000000,
+      1.35356000
+      0.21596350
+      0.20738800
+ cpot= 
+      0.00000000,
+      52.799655
+       1.103746
+     -1.427413
+ $END

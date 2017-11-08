@@ -1,0 +1,124 @@
+c-----------------------------------------------------------
+      SUBROUTINE MAXOVL(N,M,IWRT,NITER,CONV,S,T)
+C
+C
+C     CE SOUS-PROGRAMME CONTIENT UNE PROCEDURE ITERATIVE POUR
+C     DETERMINER LA TRANSFORMATION UNITAIRE D UN ENSEMBLE DE N
+C     VECTEURS QUI MAXIMISE LA SOMME DES CARRES DE LEURS RECOU-
+C     -VREMENTS AVEC UN ENSEMBLE DE M VECTEURS DE REFERENCE(M<N)
+C
+      IMPLICIT REAL*8(A-H,O,P,R-Z)
+      include 'pshf.prm'
+      DIMENSION S(metz,metz),T(metz,metz)
+      DATA ZERO,ONE/0.D0,1.D0/
+      DATA SMALL/1.D-10/
+      IF (IWRT.EQ.0) GO TO 8
+      WRITE (6,5) N,M,CONV
+    5 FORMAT (//5X,'TRANSFORMATION UNITAIRE DE',I3,' VECTEURS'/
+     * 5X,'SUIVANT LE CRITERE DU REC MAXIMUM AVEC UN ENSEMBLE DE   ',
+     * I3,' VECTEURS DE REF  '/5X,'CONVERGENCE RECQUISE DE ROTATION ',
+     * 'ANGLE =',F13.10///5X,'  RECOUVREMENT INITIAL '/)
+      DO 6 I=1,M
+      WRITE (6,145) I
+    6 WRITE (6,150) (S(I,J),J=1,N)
+    8 MM=M-1
+      IF (M.LT.N) MM=M
+      SUM=ZERO
+      DO 10 I=1,M
+   10 SUM=SUM+S(I,I)*S(I,I)
+      SUM=SUM/N
+      IF (IWRT.NE.0) WRITE(6,12) SUM
+   12 FORMAT (/,' NORME DU RECOUVREMENT  ',F10.6,/)
+      ITER=0
+      DO 20 I=1,N
+      DO 15 J=1,N
+   15 T(I,J)=ZERO
+   20 T(I,I)=ONE
+      LAST=N
+      J=1
+   21 IF (J.GE.LAST) GO TO 30
+      SUM=0.D0
+      DO 22 I=1,N
+   22 SUM=SUM+S(I,J)*S(I,J)
+      IF (SUM.GT.SMALL) GO TO 28
+      DO 24 I=1,N
+      SIJ=S(I,J)
+      S(I,J)=-S(I,LAST)
+      S(I,LAST)=SIJ
+      TIJ=T(I,J)
+      T(I,J)=-T(I,LAST)
+   24 T(I,LAST)=TIJ
+      LAST=LAST-1
+      GO TO 21
+   28 J=J+1
+      GO TO 21
+   30 ITER=ITER+1
+      AMAX=ZERO
+      DO 60 I=1,MM
+      IP=I+1
+      DO 50 J=IP,N
+      B=-S(I,I)*S(I,J)
+      IF (J.LE.M) B=B+S(J,I)*S(J,J)
+      B=B+B
+      A=S(I,J)*S(I,J)-S(I,I)*S(I,I)
+      IF (J.LE.M) A=A+S(J,I)*S(J,I)-S(J,J)*S(J,J)
+      IF (DABS(B).LT.SMALL) GO TO 32
+      TANG=(A+DSQRT(A*A+B*B))/B
+      COSINE=1.D0/DSQRT(1.D0+TANG*TANG)
+      SINE=TANG*COSINE
+      GO TO 33
+   32 IF (A.LT.ZERO) GO TO 50
+      COSINE=ZERO
+      SINE=ONE
+   33 DELTA=SINE*(A*SINE+B*COSINE)
+      IF (DELTA.LT.ZERO) GO TO 45
+      DO 35 K=1,M
+      X=S(K,I)*COSINE-S(K,J)*SINE
+      Y=S(K,I)*SINE+S(K,J)*COSINE
+      S(K,I)=X
+   35 S(K,J)=Y
+      DO 40 K=1,N
+      X=T(K,I)*COSINE-T(K,J)*SINE
+      Y=T(K,I)*SINE+T(K,J)*COSINE
+      T(K,I)=X
+   40 T(K,J)=Y
+   45 D=DABS(SINE)
+      IF (D.GT.AMAX) AMAX=D
+   50 CONTINUE
+   60 CONTINUE
+      IF (IWRT.NE.0) WRITE (6,70) ITER,AMAX
+   70 FORMAT (5X,'ITER=',I4,'     LARGEST ROTATION, SIN(ALPHA)=',F12.8)
+      IF (AMAX.LT.CONV) GO TO 100
+      IF (ITER.LT.NITER) GO TO 30
+      WRITE (6,80)
+   80 FORMAT (//5X,'***  MAXIMUM NUMBER OF CYCLES EXCEEDED ',
+     *                 'IN SUBROUTINE MAXOVL  ***'//)
+      STOP
+  100 CONTINUE
+      DO 120 J=1,M
+      IF (S(J,J).GT.ZERO) GO TO 120
+      DO 105 I=1,M
+  105 S(I,J)=-S(I,J)
+      DO 110 I=1,N
+  110 T(I,J)=-T(I,J)
+  120 CONTINUE
+      SUM=ZERO
+      DO 125 I=1,N
+  125 SUM=SUM+S(I,I)*S(I,I)
+      SUM=SUM/N
+      WRITE (6,12) SUM
+      IF(IWRT.EQ.0) RETURN
+      WRITE (6,130)
+  130 FORMAT (//5X,'TRANSFORMATION MATRIX')
+      DO 140 I=1,N
+      WRITE (6,145) I
+  140 WRITE (6,150) (T(I,J),J=1,N)
+  145 FORMAT (I8)
+  150 FORMAT (2X,10F12.8)
+      WRITE (6,160)
+  160 FORMAT (//5X,'NEW OVERLAP MATRIX'/)
+      DO 170 I=1,M
+      WRITE (6,145) I
+  170 WRITE (6,150) (S(I,J),J=1,N)
+      RETURN
+      END

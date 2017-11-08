@@ -1,0 +1,25 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE KDevPrjSession>
+<KDevPrjSession>
+ <DocsAndViews NumberOfDocuments="1" >
+  <Doc0 NumberOfViews="1" URL="file:///home/deigl/work/tlse/exemple/polarizability/tri_mono.f90" >
+   <View0 line="306" Type="Source" />
+  </Doc0>
+ </DocsAndViews>
+ <pluginList>
+  <kdevdebugger>
+   <breakpointList>
+    <breakpoint0 location="/home/deigl/work/tlse/pshf/atoms.f:174" type="1" condition="" enabled="1" />
+   </breakpointList>
+  </kdevdebugger>
+  <kdevbookmarks>
+   <bookmarks/>
+  </kdevbookmarks>
+  <kdevvalgrind>
+   <executable path="" params="" />
+   <valgrind path="" params="" />
+   <calltree path="" params="" />
+   <kcachegrind path="" />
+  </kdevvalgrind>
+ </pluginList>
+</KDevPrjSession>

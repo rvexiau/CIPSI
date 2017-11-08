@@ -1,0 +1,54 @@
+ &psfil prefix='na_' &end
+   I
+ &HONDO     NPRINT=0,SZ=0., iunt=-1,
+ GROUP='C1', 
+ &END 
+ &CENT ATOM='Na', IATN=11, ZNUC=1.,
+ APSD='pssl',
+ NTYPG=1*1,1*2,1*3, NCONG=1*1,1*1,1*1,
+ EXG=1.8,
+     0.431,
+     0.035, 
+     0.02,
+ CSG=1*1.,
+ CPG=1*1.,
+ CDG=1*1.,
+  X=2.9, Y=0.0, Z=0.0,
+ &END
+ &CENT
+  ATOM='Na',IATN=11,ZNUC=1.,APSD='pssl',
+  X=-2.9,
+  Y=0.0,
+  Z=0.0,
+  ATID='Na',
+ &END
+ &CENT &END
+ &SCFINP NPUNCH=-1,NCONV=5,aname='HCORE',
+    maxit=50,QN=1.
+ &end
+ &PSDINP
+   NUMAT=11,18,
+   NBTYP=0,1,1,1,
+	 0,1,1,1,
+   APOT=1.33118,0.60152,0.98792,
+	1.35356,0.2159635,0.207388,
+   CPOT=9.90386,1.79437,-2.39927,
+	52.799655,1.103546,-1.427413, 
+   NPOT=0,0,0,
+	0,0,-1,
+ &END
+
+ &rcufil prefix='na_', &end
+ 1.455
+
+$cvafil prefix='na_' $END
+
+&vpol
+ CALFA=
+   0.995
+&end
+&cvfil prefix='na_' $end
+&cvinp
+ POLARI=
+   0.995
+&end

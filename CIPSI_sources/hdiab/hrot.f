@@ -1,0 +1,375 @@
+c----------------------------------------------------------
+      SUBROUTINE HROT
+      IMPLICIT REAL*8(A-H,O,P,R-Z),LOGICAL*1(Q)
+      include 'pshf.prm'
+      INTEGER*4 NE,ND,TROU,PART,NER,NDR,PR,TR
+      COMMON/CIC/C(metz*ndetz),CR(metz*ndetz),h(metz,metz),
+     * NE(ndetz),ND(ndetz),TROU(ntpz),PART(ntpz),
+     * NER(ndetz),NDR(ndetz),TR(ntpz),PR(ntpz),
+     * num(metz),numr(metz),
+     * noca,NROT,NCF,METAT,NREF,NVR,QION,QANAL,QORTOM,QPRT
+      dimension smo(doa,doa)
+      DIMENSION S(metz,metz),SCI(ndetz),OVL(metz,ndetz)
+      dimension u(metz,metz),z(metz,metz)
+      DIMENSION QOC(2*doa),QOCR(ndetz,2*doa),QSIR(ndetz)
+C
+C
+C RECOUVREMENT ENTRE OM DE REFERENCE
+C
+      write(6,*) 'hrot'
+      write(6,*) (h(i,i),i=1,nvr)
+      READ(12) NOMR,NOMR,((SMO(K,L),K=1,NOMR),L=1,NOMR)
+      IF(QPRT) THEN
+      WRITE(6,*) ' RECOUVREMENT ENTRE OM DE REF'
+      ndim=doa
+      CALL WRT(SMO,NOMR,1,NOMR,NDIM)
+      ENDIF
+      write(6,*) 'noca,nrot,ncf,metat,nref,nvr,qion,qanal,qortom'
+      write(6,*) noca,nrot,ncf,metat,nref,nvr,qion,qanal,qortom
+C
+C CONSTRUCTION DE L'OCCUPATION DES DETERMINANTS DE REFERENCE
+C
+      WRITE(6,*) 'HDIAB NROT=',NROT
+      IF(QPRT) THEN
+      WRITE(6,*) ' DETS DE REFERENCE'
+      DO 3860 I=1,NREF
+      NDI=NDR(I)
+      NEC=NER(I)
+3860  WRITE(6,*) NEC,NDI,(TR(NDI+J),PR(NDI+J),J=1,NEC)
+      WRITE(6,*) ' DETS ADIABATIQUES'
+      DO 3865 I=1,NCF
+      NDI=ND(I)
+      NEC=NE(I)
+3865  WRITE(6,*) NEC,NDI,(TROU(NDI+J),PART(NDI+J),J=1,NEC)
+      WRITE(6,*)  'VECTEURS ADIABATIQUES'
+      DO 3830 I=1,NCF
+3830  WRITE(6,3850) (C(I+(J-1)*NCF),J=1,METAT)
+3850  FORMAT(12F10.6)
+      ENDIF
+      IF(QORTOM) GO TO 2501
+      NOC=NOCA
+      NOCI=NOC
+      IF(QION) NOCI=NOC-1
+      NO1=NOCA+1
+      DO 40 K=1,NREF
+      QSIGN=.TRUE.
+      DO 43 J=1,NOC
+      QOCR(K,J+NOMR)=.TRUE.
+   43 QOCR(K,J)=.TRUE.
+      DO 44 J=NO1,NOMR
+      QOCR(K,J+NOMR)=.FALSE.
+   44 QOCR(K,J)=.FALSE.
+      NEC=NER(K)
+      IF(NEC.EQ.0) GO TO 40
+      NDI=NDR(K)+1
+      NDF=NDI+NEC
+46    NDF=NDF-1
+      NTR=TR(NDF)
+      NPA=PR(NDF)
+      N1=NTR+1
+      N2=NPA-1
+      IF(NTR.LT.NPA) GO TO 48
+      N1=NPA+1
+      N2=NTR-1
+48    IF(N1.GT.N2) GO TO 50
+      DO 52 J=N1,N2
+52    IF(QOCR(K,J)) QSIGN=.NOT.QSIGN
+50    QOCR(K,NTR)=.FALSE.
+      QOCR(K,NPA)=.TRUE.
+      IF(NDF.GT.NDI) GOTO 46
+40    QSIR(K)=QSIGN
+C
+C  RECOUVREMENT ENTRE ETATS DE REFERENCE
+C **************************************
+C
+C
+C    RECOUVREMENTS ENTRE ETATS DE REFERENCE
+C
+C BOUCLE SUR LES ETATS
+      DO 2500 LL=1,NREF
+      QS=QSIR(LL)
+      DO 2450 L=1,NREF    
+      QSR=QSIR(L)
+      QSIGN=(QS.AND.QSR).OR.(.NOT.QS.AND..NOT.QSR)
+      WRITE(6,*) NREF,L,LL,NOC,NOMR,QSIGN,MOR  
+      MOR=0      
+      DO 2390 JR=1,NOMR
+      IF(.NOT.QOCR(L,JR)) GO TO 2390
+      MOR=MOR+1
+      MOC=0
+      DO 2385 JC=1,NOMR
+      IF(.NOT.QOCR(LL,JC)) GO TO 2385
+      MOC=MOC+1
+      S(MOR,MOC)=SMO(JR,JC)
+2385  CONTINUE
+2390  CONTINUE
+      IF(MOR.EQ.MOC) GO TO 2410
+      WRITE(6,400) L,LL,MOR,MOC,NOC
+      STOP
+2410   DA=DETERM(NOCI,mz,S)
+      MOR=0
+      DO 2430 JR=1,NOMR
+      IF(.NOT.QOCR(L,JR+NOMR)) GO TO 2430
+      MOR=MOR+1
+      MOC=0
+      DO 2420 JC=1,NOMR
+      IF(.NOT.QOCR(LL,JC+NOMR)) GO TO 2420
+      MOC=MOC+1
+      S(MOR,MOC)=SMO(JR,JC)
+2420  CONTINUE
+2430  CONTINUE
+      IF(MOR.EQ.MOC) GO TO 2440
+2440  DB=DETERM(NOC,mz,S)
+      SCI(L)=DA*DB
+      IF(.NOT.QSIGN) SCI(L)=-SCI(L)
+2450  CONTINUE
+C BOUCLE SUR LES ETATS DE REFERENCE
+      IREF=0
+      MREFCI=-NREF
+      DO 2480 K=1,NVR
+      IREF=IREF+1
+      OVLK=0.D0
+      MREFCI=MREFCI+NREF
+      DO 2470 L=1,NREF
+2470  OVLK=OVLK+SCI(L)*CR(MREFCI+L)
+2480  OVL(IREF,LL)=OVLK
+2500  CONTINUE
+      DO 2710 IR=1,NVR
+      ME=-NREF
+      DO 2700 IE=1,IR
+      SER=0.D0
+      ME=ME+NREF
+      DO 2715 LL=1,NREF
+2715  SER=SER+OVL(IR,LL)*CR(ME+LL)
+      S(IE,IR)=SER
+2700  S(IR,IE)=SER
+2710  CONTINUE
+      GO TO 2504
+2501  DO 2502 I=1,NVR
+      MI=(I-1)*NREF
+      DO 2502 J=I,NVR
+      MJ=(J-1)*NREF
+      SER=0.D0
+      DO 2503 K=1,NREF
+2503  SER=SER+CR(MI+K)*CR(MJ+K)
+      S(I,J)=SER
+2502  S(J,I)=SER
+2504  CONTINUE
+C
+C  NORMALISATION
+C
+      WRITE(6,810)
+810   FORMAT(//,' RECOUVREMENT ENTRE REFERENCES  ')
+      MREFCI=-NREF
+      DO 800 I=1,NVR
+      MREFCI=MREFCI+NREF
+      SII=S(I,I)
+      DO 805 L=1,NREF
+805   CR(MREFCI+L)=CR(MREFCI+L)/DSQRT(SII)
+800   WRITE(6,595) (S(I,J),J=1,NVR)
+595   FORMAT(13(F12.6))
+      WRITE(6,525)
+525   FORMAT(/,1X,'LES REFERENCES SONT DESORMAIS NORMALISEES',/)
+      DO 650 I=1,NVR
+      SII=DSQRT(S(I,I))
+      DO 660 J=1,NVR
+      SJJ=DSQRT(S(J,J))
+660   Z(I,J)=S(I,J)/(SII*SJJ)
+650   WRITE(6,595) (Z(I,J),J=1,NVR)
+C
+C   RECOUVREMENTS ENTRE ETATS DE L IC ET REFERENCES
+C   ***********************************************
+C
+C
+C
+C  RECOUVREMENT ENTRE OM ET OM DE REFERENCE
+C
+      IF(QORTOM) GO TO 451
+      READ(12) NOMR,NOM,((SMO(K,L),K=1,NOMR),L=1,NOM)
+      IF(QPRT) THEN
+      WRITE(6,*) ' RECOUVREMENT OM REF/OM'
+      CALL WRT(SMO,NOMR,1,NOM,NDIM)
+      WRITE(6,*) 'NCF,METAT,NOM,NROT,NREF,NVR,NOMR'
+      WRITE(6,*) NCF,METAT,NOM,NROT,NREF,NVR,NOMR
+      ENDIF
+C
+C  RECOUVREMENT ENTRE ETATS ET ETATS DE REFERENCE
+C
+C
+C BOUCLE SUR LES ETATS
+      DO 405 LL=1,NCF
+      DO 415 J=1,NOC
+      QOC(J+NOM)=.TRUE.
+415   QOC(J)=.TRUE.
+      DO 425 J=NO1,NOM
+      QOC(J+NOM)=.FALSE.
+425   QOC(J)=.FALSE.
+C  SIGNE DES DETERMINANTS DE S
+       QSILL=.TRUE.
+      NEC=NE(LL)
+      IF(NEC.EQ.0) GO TO 140
+      NDI=ND(LL)+1
+      NDF=NDI+NEC
+146   NDF=NDF-1
+      NTR=TROU(NDF)
+      NPA=PART(NDF)
+      N1=NTR+1
+      N2=NPA-1
+      IF(NTR.LT.NPA) GO TO 148
+      N1=NPA+1
+      N2=NTR-1
+148   IF(N1.GT.N2) GO TO 150
+       DO 160 J=N1,N2
+160    IF(QOC(J)) QSILL=.NOT.QSILL
+150    QOC(NTR)=.FALSE.
+       QOC(NPA)=.TRUE.
+       IF(NDF.GT.NDI) GO TO 146
+140    CONTINUE
+      IF(QPRT) WRITE(6,*) LL,NE(LL),ND(LL)
+      IF(QPRT) WRITE(6,*) 'OCC ALPHA',(QOC(II),II=1,NOM)
+      IF(QPRT) WRITE(6,*) 'OCC BETA',(QOC(II+NOM),II=1,NOM)
+      DO 450 L=1,NREF
+      QSR=QSIR(L)
+      QSIGN=(QSILL.AND.QSR).OR.(.NOT.QSILL.AND..NOT.QSR)
+      MOR=0
+      DO 390 JR=1,NOMR
+      IF(.NOT.QOCR(L,JR)) GO TO 390
+      MOR=MOR+1
+      MOC=0
+      DO 385 JC=1,NOM
+      IF(.NOT.QOC(JC)) GO TO 385
+      MOC=MOC+1
+      S(MOR,MOC)=SMO(JR,JC)
+  385 CONTINUE
+390   CONTINUE
+      IF(MOR.EQ.MOC) GO TO 410
+      WRITE(6,400) L,LL,MOR,MOC,NOC
+  400 FORMAT(/5X,'ERREUR DANS LE SOUS PROGRAMME DIAOVL'/
+     *5X,'L,LL,MOR,MOC,NOC=',5I5/)
+      STOP
+  410 DA=DETERM(NOCI,mz,S)
+      MOR=0
+      DO 430 JR=1,NOMR
+      IF(.NOT.QOCR(L,JR+NOMR)) GO TO 430
+      MOR=MOR+1
+      MOC=0
+      DO 420 JC=1,NOM
+      IF(.NOT.QOC(NOM+JC)) GO TO 420
+      MOC=MOC+1
+      S(MOR,MOC)=SMO(JR,JC)
+  420 CONTINUE
+430   CONTINUE
+      IF(MOR.EQ.MOC) GO TO 440
+      WRITE(6,400) L,LL,MOR,MOC,NOC
+  440 DB=DETERM(NOC,mz,S)
+      SCI(L)=DA*DB
+      IF(.NOT.QSIGN) SCI(L)=-SCI(L)
+  450 CONTINUE
+       IF(QPRT) WRITE(6,*) 'LL=',LL,(SCI(L),L=1,NREF)
+C BOUCLE SUR LES ETATS DE REFERENCE
+      IREF=0
+      DO 480 K=1,nrot
+      IREF=IREF+1
+      OVLK=0.D0
+      mrefci=(numr(k)-1)*nref
+      DO 470 L=1,NREF
+470   OVLK=OVLK+SCI(L)*CR(MREFCI+L)
+  480 OVL(IREF,LL)=OVLK
+405   CONTINUE
+      IF(QPRT) THEN
+      WRITE(6,*) 'RECOMBINAISON SUR LES ETATS'
+      DO 3875 IR=1,nrot
+3875  WRITE(6,3850) (OVL(IR,LL),LL=1,NCF)
+      ENDIF
+      DO 710 IR=1,NROT
+      DO 700 IE=1,NROT
+      SER=0.D0
+      me=(num(ie)-1)*ncf
+      DO 715 LL=1,NCF
+  715 SER=SER+OVL(IR,LL)*C(ME+LL)
+  700 S(IR,IE)=SER
+  710 CONTINUE
+      GO TO 454
+451   DO 452 IR=1,NROT
+      MI=(numr(ir)-1)*NREF
+      DO 452 IE=1,NROT
+      MJ=(num(ie)-1)*NCF
+      SER=0.D0
+      DO 453 K=1,NREF
+453   SER=SER+CR(MI+K)*C(MJ+K)
+452   S(IR,IE)=SER
+454   CONTINUE
+C
+      WRITE(6,840)
+840   FORMAT(/,' RECOUVREMENT ENTRE REFERENCES ET ETATS ADIABATIQUES')
+      DO 850 I=1,NROT
+850   WRITE(6,595) (S(I,J),J=1,NROT)
+
+      IF(QANAL) RETURN
+C
+C     ROTATION DES ETATS
+C    *******************
+C
+      CALL MAXOVL(NROT,NROT,1,10000,1.D-7,S,U)
+      WRITE (6,60)
+   60 FORMAT (/,1X,'RECOUVREMENT ENTRE REFERENCES ET ETATS',
+     *' DIABATIQUES'/)
+      DO 70 IR=1,NROT
+      WRITE(6,595) (S(IR,IE),IE=1,NROT)
+   70 IF (NROT.GT.10) WRITE (6,595) (S(IR,IE),IE=11,NROT)
+      WRITE (6,80)
+   80 FORMAT (/,1X,'VECTEURS DIABATIQUES DANS LA BASE ADIABATIQUE',/)
+      MAX=0
+   90 MIN=MAX+1
+      MAX=MAX+10
+      IF (MAX.GT.NROT) MAX=NROT
+C
+C   RECOMBINAISON SUR LES DETERMINANTS
+C
+      DO 110 I=1,NROT
+  110 WRITE (6,595) (U(I,J),J=MIN,MAX)
+      IF (MAX.LT.NROT) GO TO 90
+      DO 220 K=1,NCF
+      I=0
+      DO 230 M=1,NROT
+      I=I+1
+      A=0.D0
+      DO 240 N=1,NROT
+      in=(num(n)-1)*ncf+k
+240   A=A+C(IN)*U(N,M)
+230   CR(I)=A
+      I=0
+      DO 220 M=1,NROT
+      in=(num(n)-1)*ncf+k
+      I=I+1
+  220 C(IM)=CR(I)
+      NNCF=NROT*NCF
+C
+C      HAMILTONIENS APRES ROTATION
+C
+      WRITE(6,270)
+      DO  I=1,NROT
+      DO  J=1,NROT
+      XX=0.D0
+      do k=1,nrot
+         XX=XX+H(J,K)*U(K,I)
+      enddo
+      Z(J,I)=XX
+      enddo
+      enddo
+      DO  I=1,NROT
+      DO  J=I,NROT
+      XX=0.D0
+      DO  K=1,NROT
+         XX=XX+U(K,J)*Z(K,I)
+      enddo
+      H(J,I)=XX
+      enddo
+      enddo
+      do i=1,nvr
+          WRITE(6,595) (H(I,J),J=1,I)
+      enddo
+       
+  270 FORMAT (//,' HAMILTONIEN APRES ROTATION'/)
+      RETURN
+      END

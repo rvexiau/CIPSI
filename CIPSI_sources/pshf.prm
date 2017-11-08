@@ -1,0 +1,21 @@
+      integer doa,dgp,ds,doas,dc,doasq,doas1
+      integer id1,id2,id3,id4,id5,id6,id7,id8,id9,id10,id11,id12,id13
+      parameter (nopnl=40)
+      parameter (nbufz=4096)
+      parameter (lsize=8192)
+      parameter (kget=60000000)
+      parameter (ndetz=500000,metz=60)
+      parameter (nhefz=metz*(metz+1)/2)
+      parameter (ndimh=500000,nblk=20)
+      parameter (doa=512,dgp=512,ds=512,doas=doa*(doa+1)/2,dc=500)
+      parameter (doasq=doa*doa,doas1=doa*(doa+1))
+      parameter (nsymz=20,ntpz=8*ndetz)
+      parameter (nmulz=30000)
+      parameter (lungo=1000)
+      parameter (nblokz=ndetz)
+      parameter (ncouz=60,nexz=10)
+      parameter (nprimz=20)
+      parameter (metz2=2*metz)
+      parameter(id1=doa,id2=id1*(id1+1)/2,id3=id1*2,id4=ndetz,id5=ndetz,
+     * id6=nsymz,id7=id6*id4,id8=6*id4,id9=id4+1,id10=id6*(id6+1)/2,
+     * id11=id6*(id6-1)/2,id12=id1+1,id13=id6*3)

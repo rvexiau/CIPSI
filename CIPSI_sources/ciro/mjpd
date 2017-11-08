@@ -1,0 +1,4 @@
+echo $PARAM
+rm pshf.prm
+cp $PARAM pshf.prm
+make

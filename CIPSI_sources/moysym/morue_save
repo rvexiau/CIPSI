@@ -1,0 +1,457 @@
+      subroutine morue
+      implicit real*8(a-h,o-x,z),logical*1(y)
+      include 'pshf.prm'
+      integer*4 trou,part,nexst,nd
+      integer*4 ibid
+      character*20 title
+      character*40 typener 
+      integer*4 iorb,iwspin,itsym,its,isytr,kkk,lll   
+      integer,dimension(6) :: dettab
+      integer,dimension(:),allocatable :: spin
+      integer,dimension(:,:),allocatable :: spintab,orbtab    
+      integer,dimension(:,:),allocatable :: deg,numtab,ordertab    
+      logical,dimension(:),allocatable :: ygood
+      common/dinde/trou(8*ndimh),part(8*ndimh),nexst(ndimh),
+     * nd(ndimh)
+      common/e0cip/ebmp(metz),eben(metz),tau
+      common/spo/ feff(2*doa),fdiag(2*doa),
+     * iorb(2*doa),iwspin(2*doa),ispin(2*doa),
+     *itsym(2*doa),its(nsymz,nsymz),yoc(2*doa),isytr(2*doa,nsymz)      
+      common/ic/c(ndetz*metz),e(ndetz),eb(metz),e2(metz),
+     *emp(metz),e2en(metz),teste(metz),elevy(metz),e2mp(metz),ac,ei,
+     *hdef,dpivot,fmpb(2*doa),dmpb(10),ishif,ietat
+      common  /cipsi/ norb,mnorb,noca,nocb,
+     *igela,igelb,ncf,ncper,nsym,isym,isz,ntrsy,metat,
+     *isymat(smax),nelac,yprt,yion,ystkmp
+      common/nom33/title
+      common/mod90/noa,ydp      
+      data zero/0.d0/
+      dimension cunt(ndimh,metz)
+      dimension numero(metz),hpert(metz),hefmp(nhefz),
+     *hefen(nhefz),hefenb(nhefz),
+     *hef(nhefz)
+      integer itab(lsize,smax),jtab(lsize,smax)
+      integer itabbuf(ndimh,2),jtabbuf(ndimh,2)      
+      dimension ntst(8,2),npst(8,2),nest(2)      
+      dimension vbuf(lsize,smax),vbufbuf(ndimh,2)
+      dimension nhij(smax),nbuf(smax),nbufbuf(2)
+      dimension it(smax),jt(smax),jtbuf(2)
+      dimension stefmp(ndimh),stefen(ndimh)
+      dimension hijsym(10,10)
+c
+c
+
+      call ijkf
+      call reijkl(norb,nsym,ydp)
+      
+      read(4) norb,noca,nocb,metat,ndims,isz,yion,ii,jj,
+     * (ibid,ibid,i=1,ndims),
+     & (ibid,ibid,i=1,ii),(c(i),i=1,jj),(e(i),i=1,metat),
+     &  (ebmp(i),i=1,metat),(eben(i),i=1,metat),(numero(i),i=1,metat),
+     &   (xdum,i=1,ndims),(fmpb(i),i=1,norb)
+      mmm=metat*(metat+1)/2
+      read(4)
+      read(4) (hef(i),i=1,mmm)
+      
+      do 3000 i=1,mnorb
+ 3000 yoc(i)=.false.
+      yoc(mnorb+1)=.false.
+       
+      nvirtelac=nelac
+      if(yion) nvirtelac=nvirtelac+1
+c     deg(*,10+1) : allocation for up to 5e-
+c     for 5e- there are 10 possible combinaisons of ms=-1/2    
+      nsmax=smax
+      imax=2*ncf
+      iadd=imax
+      allocate(spintab(imax,nelac),orbtab(imax,nelac),
+     * deg(imax,10+1),numtab(imax,nsmax),ordertab(imax,10),
+     * ygood(imax))
+      
+      yspin=.false.
+      do i=1,nsmax
+        if(isymat(i).eq.1) then
+          yspin=.true.
+          exit
+        endif  
+      enddo
+      
+      if(yspin) then
+      orbtab=norb     
+      do i=1,ncf
+        ! construct reference determinant
+        select case (nvirtelac/2)
+        case (1)
+          dettab=(/1,norb+1,0,0,0,0/)
+        case (2)
+          dettab=(/1,2,norb+1,norb+2,0,0/)
+        case (3)
+          dettab=(/1,2,3,norb+1,norb+2,norb+3/)
+        case DEFAULT 
+          write(*,*) 'wrong number of electron' 
+          stop
+        end select
+        
+        ! construct virtual determinant by removing trou from ref
+        ij=0
+        do j=1,nexst(i)
+          nt=trou(nd(i)+j)
+          np=part(nd(i)+ij)
+          do k=1,nvirtelac
+            if(nt.eq.dettab(k)) then
+              if(np.eq.mnorb+1.or.np.le.norb) then
+                dettab(k)=np
+                ij=ij+1
+                exit
+              else
+                if(nt.ge.norb+1) then
+                  dettab(k)=np
+                  ij=ij+1
+                  exit
+                else
+                  dettab(k)=mnorb+1
+                  exit
+                endif
+              endif  
+            endif  
+          enddo        
+        enddo
+        
+        ! sort the orbitals of the det in ascending order
+        j=0
+        do k=1,nvirtelac
+          if(dettab(k).eq.mnorb+1) then
+            cycle
+          elseif(dettab(k).gt.norb) then
+            np=dettab(k)-norb
+            ns=-1
+          else
+            np=dettab(k)
+            ns=1
+          endif
+          number=1
+          do ij=1,j
+            if(np.le.orbtab(i,ij)) exit
+            number=number+1
+          enddo  
+          do ij=j,number,-1
+            orbtab(i,ij+1)=orbtab(i,ij)
+            spintab(i,ij+1)=spintab(i,ij)          
+          enddo
+          j=j+1  
+          orbtab(i,number)=np
+          spintab(i,number)=ns 
+        enddo
+        
+        if(i.eq.10.or.i.eq.17.or.i.eq.31) then
+          write(*,'(a12,i3,a15)') '************',i,'***************'
+          write(*,'(4i7)') (trou(nd(i)+k),k=1,nexst(i))
+          write(*,'(4i7)') (part(nd(i)+k),k=1,nexst(i))          
+          write(*,'(4i7)') (dettab(k),k=1,4)
+          write(*,'(4i7)') (spintab(i,k),k=1,3)
+        endif
+        if(i.eq.48.or.i.eq.91.or.i.eq.104) then
+          write(*,'(a12,i3,a15)') '************',i,'***************'
+          write(*,'(4i7)') (trou(nd(i)+k),k=1,nexst(i))
+          write(*,'(4i7)') (part(nd(i)+k),k=1,nexst(i))          
+          write(*,'(4i7)') (dettab(k),k=1,4)
+          write(*,'(4i7)') (spintab(i,k),k=1,3)
+        endif
+      enddo
+                 
+c     look for determinant with the same orbitals
+      deg=0      
+      do i=1,ncf 
+        ydeg=.false.
+        ne1=nexst(i)
+        do j=1,i-1
+          if(deg(j,1).eq.0)cycle
+          if(.not.(ne1.eq.nexst(j))) cycle          
+          ydeg=.true.
+          do k=1,nelac
+            if(.not.(orbtab(i,k).eq.orbtab(j,k))) then
+              ydeg=.false.
+              exit
+            endif  
+          enddo
+          if(ydeg) then
+            deg(j,1)=deg(j,1)+1
+            deg(i,1)=0
+            deg(j,deg(j,1)+1) = i            
+            exit
+          endif 
+        enddo   
+        if(.not.ydeg) then
+          deg(i,1)=1
+          deg(i,2)=i
+        endif  
+      enddo 
+     
+      call newdet(nelac,ncf,iadd,norb,nexst,nd,
+     *     trou,part,ordertab,orbtab,spintab,deg,ygood)
+
+      else
+c      don't construct eigenfunctions of S^2
+        ordertab=0
+        ygood=.true.
+        do i=1,ncf
+          deg(i,1)=1
+          deg(i,2)=i
+        enddo    
+      endif
+      
+c     start computing the H matrix 
+      cunt=0d0
+      numtab=0
+      nhij=0
+      nbuf=0
+      nbufbuf=0
+      itab=0
+      itabbuf=0
+      jtab=0
+      jtabbuf=0
+      it=0
+      jt=0
+      jtbuf=0
+      do nss=1,smax
+        rewind(70+nss)
+      enddo
+      ntot=0
+      do i=1,ncf
+        if(.not.ygood(i)) cycle
+        ne1=nexst(deg(i,2))
+        nest(1)=ne1
+        do j=1,i
+          if(.not.ygood(j)) cycle
+          ne2=nexst(deg(j,2))
+          ndif=abs(ne2-ne1)
+          if(ndif.gt.2) cycle
+          nest(2)=ne2
+c         non-zero couplings, compute the different hij
+          hijsym=0d0
+          do ii=1,deg(i,1)
+            nind1=deg(i,ii+1)
+            ndd1=nd(nind1)
+            do k=1,ne1
+              ntk=trou(ndd1+k)
+              ntst(k,1)=ntk
+              yoc(ntk)=.true.
+              npk=part(ndd1+k)
+              npst(k,1)=npk
+              yoc(npk)=.true.
+            end do
+            do jj=1,deg(j,1)
+              nind2=deg(j,jj+1)
+              ndd2=nd(nind2)
+c             diagonal element              
+              if(nind1.eq.nind2) then
+                stfn=hdig(nest,ntst,npst)
+                hijsym(ii,jj)=stfn
+                if(nind1.gt.ndims) then
+                  stefen(nind1)=stfn
+                  stefmp(nind1)=hmp(nest,ntst,npst)                
+                endif
+                cycle
+              endif
+              
+              ndif2=ndif
+              do k=1,ne2
+                ntk=trou(ndd2+k)
+                ntst(k,2)=ntk
+                if(.not.yoc(ntk))ndif2=ndif2+1
+                npk=part(ndd2+k)
+                npst(k,2)=npk
+                if(.not.yoc(npk))ndif2=ndif2+1
+              end do
+              if(ndif2.gt.2) cycle 
+              hijsym(ii,jj)=hntd(nest,ntst,npst)  
+c      if element couple space S and M : add to 2nd order pert. calc 
+              if((nind2.gt.ndims.and.nind1.le.ndims).or.
+     *         (nind1.gt.ndims.and.nind2.le.ndims)) then
+                mmind=min(nind1,nind2)
+                mpind=max(nind1,nind2)
+                mi=mmind-ndims
+                do m=1,metat
+                  mi=mi+ndims
+                  cunt(mpind,m)=cunt(mpind,m)+c(mi)*hijsym(ii,jj)
+                enddo
+              endif
+            enddo
+c           reinitialize yoc 
+            do k=1,ne1
+              ntk=trou(ndd+k)
+              yoc(ntk)=.true.
+              npk=part(ndd+k)
+              yoc(npk)=.true.
+            end do
+          enddo
+          if(yspin) then
+          
+          if(deg(i,1).eq.3.and.deg(j,1).eq.3) then
+          hij=0d0
+          hij=-hijsym(ordertab(i,1),ordertab(j,1))+
+     *     hijsym(ordertab(i,1),ordertab(j,3))+
+     *      hijsym(ordertab(i,2),ordertab(j,1))
+     *        -hijsym(ordertab(i,2),ordertab(j,3))
+     *        -hijsym(ordertab(i,3),ordertab(j,1))
+     *         +hijsym(ordertab(i,3),ordertab(j,3))
+          if(dabs(hij).gt.10d-6)then 
+          write(*,*) 'ERROR  ' ,i,j
+          write(*,'(3i7)') deg(i,2),deg(i,3)
+     *     ,deg(i,4)  
+          write(*,'(3i7)') deg(j,2),deg(j,3)
+     *     ,deg(j,4)      
+          write(*,'(3i7)') ordertab(i,1),ordertab(i,2)
+     *     ,ordertab(i,3)   
+          write(*,'(3i7)') ordertab(j,1),ordertab(j,2)
+     *     ,ordertab(j,3)  
+          write(*,*) part(nd(deg(i,2))+1),part(nd(deg(i,2))+2),
+     *     trou(nd(deg(i,2))+1),trou(nd(deg(i,2))+2)
+          write(*,*) part(nd(deg(i,3))+1),part(nd(deg(i,3))+2),
+     *     trou(nd(deg(i,3))+1),trou(nd(deg(i,3))+2)
+          write(*,*) part(nd(deg(i,4))+1),part(nd(deg(i,4))+2),
+     *     trou(nd(deg(i,4))+1),trou(nd(deg(i,4))+2)      
+          write(*,*)hijsym(1,1),hijsym(1,2),hijsym(1,3)
+          write(*,*)hijsym(2,1),hijsym(2,2),hijsym(2,3)
+          write(*,*)hijsym(3,1),hijsym(3,2),hijsym(3,3)          
+          endif
+          endif
+          
+            call wrthij(nbuf,itab,jtab,vbuf,nbufbuf,itabbuf,jtabbuf,
+     *       vbufbuf,nhij,nelac,ncf,i,j,it,jt,jtbuf,deg(i,1),deg(j,1),
+     *       hijsym,imax,ordertab,numtab,isymat)
+          else
+            call wrthijtot(nbuf(1),itab,jtab,vbuf,nhij(1),ncf,
+     *     i,j,hijsym(1,1),numtab)
+          endif
+        enddo
+      enddo
+ 
+c     write last buffer  
+      do nss=1,smax
+        itab(lsize,nss)=-1
+        jtab(lsize,nss)=nbuf(nss)
+        if(nhij(nss).eq.0) cycle
+        write(70+nss) itab(:,nss),jtab(:,nss),vbuf(:,nss)
+      enddo       
+      if(.not.(yspin)) it(1)=ncf
+        write(6,846) 
+  846   format(//' *** fin de la construction de h ***')
+
+c      write information on the mat file
+       rewind(70)
+       write(*,*) 'Total number of determinant : ',ncf
+       write(*,*) 'Number of determinant in each 2S+1 matrix :'
+       write(*,'(6i9)') (it(i),i=1,smax)      
+       write(70) ncf,nelac,nsmax,yspin
+       write(70) (it(i),i=1,nsmax),((deg(i,j),i=1,ncf),j=1,11),
+     *  ((ordertab(i,j),i=1,ncf),j=1,10),
+     *  ((numtab(i,j),i=1,ncf),j=1,nsmax)
+      deallocate(spintab,orbtab,deg,numtab,ordertab,ygood)
+       
+c      write(6,3456)
+c      write(6,3457) (stefen(i),i=1,ncf)
+ 3456 format(//' elements diagonaux')
+ 3457 format(12f10.6)
+      if(ystkmp) write(63) (stefmp(i),i=1,ncf)
+      if(ystkmp) write(6,2378)
+ 2378 format(/, ' elements diagonaux m.p. sur file 63')
+ 
+ 
+c      Calcul des perturbations 
+ 
+      write(6,9220)
+9220  format(//)
+      write(6,9344)
+ 9344 format(/' caracteristique des etats a l''ordre zero')
+      write(6,9230)
+9230  format(1x,40('*'),/)
+      write(6,9233)
+9233  format('  etat',4x,'partition m.p.b',10x,'partition e.n.vp',10x,
+     *'partition e.n.b',/)
+      do 9345 i=1,metat
+ 9345 write(6,9346) i,ebmp(i),e(i),eben(i)
+ 9346 format(i4,f18.8,2f25.8)
+      ij=0
+      do 25 i=1,metat
+      do 25 j=1,i
+      ij=ij+1
+       hefenb(ij)=0.d0
+       hefmp(ij)=0.d0
+25     hefen(ij)=0.d0
+       
+      if(ndims.eq.ncf) go to 8300
+
+      do 2 k=ndims+1,ncf 
+      stenk=stefen(k)
+      stmpk=stefmp(k)
+      enk2=stenk+stenk
+      empk2=stmpk+stmpk
+      ii=0
+      do 103 m=1,metat
+      do 103 n=1,m
+      ii=ii+1
+      denb=eben(m)+eben(n)-enk2
+      dmp=ebmp(m)+ebmp(n)-empk2
+      den=e(m)+e(n)-enk2
+      hmn=cunt(k,m)*cunt(k,n)
+      hmn=hmn+hmn
+      hefmp(ii)=hefmp(ii)+hmn/dmp
+      hefen(ii)=hefen(ii)+hmn/den
+      hefenb(ii)=hefenb(ii)+hmn/denb
+103   continue
+2     continue
+
+      write(6,9000)
+9000  format(//,1x,'contribution 2n ordre des determinants moyens',/)
+      write(6,9234)
+9234  format(1x,45('*'))
+      write(6,9001)
+9001  format(1x,'perturbation mp',/)
+      do 120 m=1,metat
+      i1=m*(m-1)/2+1
+      i2=m*(m+1)/2
+120   write(6,9004) (hefmp(ii),ii=i1,i2)
+      write(6,9220)
+      write(6,9003)
+9003  format(1x,'perturbation envp',/)
+      do 140 m=1,metat
+      i1=m*(m-1)/2+1
+      i2=m*(m+1)/2
+140   write(6,9004) (hefen(ii),ii=i1,i2)
+      write(6,9220)
+      write(6,9002)
+9002  format(1x,'perturbation enb',/)
+      do 130 m=1,metat
+      i1=m*(m-1)/2+1
+      i2=m*(m+1)/2
+130   write(6,9004) (hefenb(ii),ii=i1,i2)
+9004  format(11f11.6)
+      write(6,9220)
+      do m=1,metat
+	hpert(m)=hefmp(m*(m+1)/2)
+      end do 
+      typener='moyens mbp '//title
+      call stkener(typener,hpert,metat)
+      do m=1,metat
+	hpert(m)=hefen(m*(m+1)/2)
+      end do 
+      typener='moyens envp'//title
+      call stkener(typener,hpert,metat)
+      do m=1,metat
+	hpert(m)=hefenb(m*(m+1)/2)
+      end do 
+      typener='moyens enb '//title
+      call stkener(typener,hpert,metat)
+      write(6,9005)
+      write(6,9005)
+9005  format(/,2x,128('*'))
+ 8300 rewind 4
+      read(4)
+      read(4)
+      read(4)
+      write(4) (hefmp(i),i=1,mmm),
+     *         (hefen(i),i=1,mmm),
+     *         (hefenb(i),i=1,mmm)
+      return
+      end

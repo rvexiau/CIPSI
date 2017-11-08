@@ -1,0 +1,11 @@
+      parameter (lsize=8192)
+C      parameter (kget=60000000)
+      parameter (kget=200000000)
+C      parameter (kgetq=60000000)
+      parameter (kgetq=150000000)
+      parameter (ndetz=500000,metz=60)
+      parameter (nhefz=metz*(metz+1)/2)
+      parameter (ndimh=500000)
+      parameter (ncpm=2500,nvsi=2048,netm=200,nczm=2500)
+      parameter (doa=512)
+

@@ -1,0 +1,14 @@
+modifs du 30/6/2000
+
+dimension de v(225,20)->v(225,nopnl) dans xyzdip
+appel de xyzdip dans pshf apres xpsnlc et xpsslc
+chelec appele dans pshf  modifie l operateur de fock
+en presence d un champ electrique ( auparavant fait
+simultanement dans scf scfgel et scfop)
+Le calcul en champ uniforme fonctionne (chelec)
+Le calcul des moments dipolaires aussi (dipole)
+
+
+modifs du 14/11/2002
+dans scf:  
+ecriture correcte de l energie totale pour 0 electron
