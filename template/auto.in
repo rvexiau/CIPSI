@@ -1,0 +1,62 @@
+t					!run calculation ! THIS IS AN AUTOCIP8B config file
+'bin'					!repertoire des binaires
+''
+{output}
+{core},{electron}
+{atoms} 				    !atom
+'{name}.dat'
+'rpol'					!option RPOL/RCUT
+f,3,20					!l_mono,lambda_max,nbres de VP a traiter
+t,t,f,0,0,0				!l_cip,l_dip,l_vcc,a_rep,b_rep,c_rep
+f,f,					!l_efield,l_efield_firstpshf
+f,f,					!l_diab,l_calcref
+
+# configuration block #
+
+:grid:
+'{group}',t					! group / center-of-mass
+0,0
+'grid'						! sampling method LHS or grid
+'jacobi'					! Jacobi / internuclear / hyperspherical
+3.0						! min value
+45.0						! max value of the grid
+0.2						! step value(grid) or number of points(LHS)
+3.0 						! minimal internuclar distance
+
+:method:
+{algo}						! t:FCI / f:CIPSI
+-1,{active}                 !active virtual orbital for the initial reference CAS; -1 => FCI
+{netat},1d-5					! netat et envp maximum apres calcul
+0.1,0.5				! ref CAS limit (det max, tau_init, tau_step)
+4200,9500,5000,1000000
+T
+1d-4					!trec for ijklin namelist
+
+:symmetries:
+'{namesym}.dat'
+{nsym},{netat}				!nombre de symetries a traiter,spin,elecron,nombre d'etats par symetrie
+{sym}				    !symetries a traiter
+{spin}
+
+
+:electricfield:
+'y'
+25                 !number of field values
+0.0,-0.0001,       !list of field values
+t					  !finite field
+
+:dipolemoments:
+'{namedip}.dat'
+t,0.8                           !try to guess tdm sign
+{ndip}                          !number of transition combinations
+{dipole}
+
+
+:diabatization:
+'rbca.dat'
+50
+60
+2
+1,1
+1,1
+

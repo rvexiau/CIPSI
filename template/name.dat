@@ -1,0 +1,76 @@
+&PSFIL
+ prefix='{name}_',
+ psnl_fil=pseudo/PSNL',
+ ps_molcas_fil=pseudo/MWBPOT',
+&END
+
+&HONDO
+ iunt=-1,
+ NPRINT=0,
+ IREST=0,
+&END
+
+{basis}
+
+&SCFINP
+ NPUNCH=-1,
+ NCONV=6,
+ aname='HCORE',
+ BNAME='RHF',
+ maxit=100,
+ YMONO=F,
+ CEXTRP=0.01d0,
+ AMIX=0.5d0,
+&end
+
+{psdinp}
+
+&rcufil
+ f10=rcut/DERPL03',
+&end
+
+&rpofil
+&end
+
+&rcutval
+ YSOFT=F,
+ PLMAX=3,
+ NO(1)=4,NO(2)=2,
+{rcut}
+&end
+
+&rcval
+ YSOFT=F,
+ RCUT=1.474,1.89095
+&end
+
+&cvafil
+&END
+
+&vpol
+ CALFA={calfa}
+ YMONO=f,
+&end
+
+&ijfil
+ info='info_cv',
+ pqrs='pqrs_cv',
+&end
+
+&IJKLIN
+ YORBF=T,
+ YAUTO=T,
+ YDP=T,
+ YPRTH=T,
+ CHSTAN=F,
+ LJKF=1,
+ NTRANS=0,
+ YREDUC=T,
+&end
+
+&fokfil
+&end
+
+&somfil
+ info='info_cv',
+&end

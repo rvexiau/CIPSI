@@ -1,0 +1,27 @@
+&cipfil
+&end
+
+&icinp
+twdet=0.5
+&end
+
+&MOYFIL 
+&end
+
+&moyen
+&end
+
+&bdfil 
+&end
+
+&option
+ QGIV =T,
+ NCPER=800,
+ test=0.3d-3,
+ qws=t,
+ qwb=t,
+ qwvec=t,
+&end
+
+&sort
+&end

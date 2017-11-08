@@ -1,0 +1,11 @@
+&ROFIL
+&end
+
+&roinp
+ YONA=F,
+ YDIPOL=T,
+ YMOYEN=T,
+ YPOPUL=F,
+ YPRT=F,
+ YCV=T
+&end
