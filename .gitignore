@@ -1,4 +1,11 @@
 CIPSI_sources_backup/
 idris/
 old_autocip/
+bin/backup/
 .directory
+*.o
+*.f~
+*.prm~
+*.aux
+*.log
+*.tex.backup
