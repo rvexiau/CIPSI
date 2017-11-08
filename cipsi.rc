@@ -1,3 +1,2 @@
-export CIPSI_ROOT=/home/romain/travail/src/CIPSI/
 export PATH="${CIPSI_ROOT}"/bin:"${CIPSI_ROOT}"/scripts:"${PATH}"
 
