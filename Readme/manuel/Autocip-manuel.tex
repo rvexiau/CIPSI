@@ -1,0 +1,235 @@
+\documentclass[a4paper,10pt]{article}
+%\documentclass[a4paper,10pt]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{array}
+\renewcommand{\arraystretch}{1.8}
+
+ \geometry{
+ a4paper,
+ left=10mm,
+ right=10mm,
+ top=20mm,
+ bottom=15mm,
+ }
+\pagestyle{empty}
+
+
+\title{Autocip : User's manual}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{General purpose}
+
+This Program executes the CIPSI chain of Toulouse for atoms and molecules.
+The main output are :
+\begin{itemize}
+ \item{Potential curves : file vccind}
+ \begin{itemize}
+  \item{For a series of interatomic distance, either on a grid or with LHS method in an hypercube
+     depending on the grid\_method tag (='grid' or 'LHS' or 'LIST')}
+  \item{For a series of NSYM symmetries SYM(NSYM)}
+ \end{itemize}
+ \item{Transition dipole moment : files dx\_, dy\_, dz\_}
+\end{itemize}
+
+The Sorting is automatically done including the removal of parasites states for CINFV and DINFH group symmetries. Potentials can include the core-core term 'vccind\_sym', or not 'v\_sym'
+\\[12pt]
+General procedure (option a or b depending if spin symmetrisation done or not) :
+\begin{enumerate}
+\item{pshf rpol cval pshf ijkl fock	: for every symmetry }
+\item{cipsym moy bd			: for every symmetry, loop to get the initial active space}
+\item{ciro                          	: for every combinaison of symmetry asked}
+\end{enumerate}~
+\\[12pt]
+The run can stop after each step depending on input :
+\begin{itemize}
+ \item{L\_MONO=T: monoelectronic energies are stored}
+ \item{L\_CIP=F: stop at step 1 (monoelectronic energies)}
+\item{ L\_DIP=F: stop at step 2 (molecular energies)}
+ \item{L\_DIP=T: also compute properties (dipole moment)}
+\end{itemize}
+
+Execution : autocip$<$auto.in
+\\[12pt]
+ NOTE: AUTOCIP has to be executed in a "root" directory (like ~/tlse/exemple); final results are written in the same directory. Direct output of the CIPSI chain are stored in an automatically created subdirectory : "Results". AUTOCIP also create a subdirectory work inside which each processor create his own work subdirectory. CIPSI binary are excuted in those work subdirectories, temporary unformatted files are deleted at the end of each geometry run.
+\\[12pt]
+ Input files are created automatically at each step starting from a model file. The model files have to be in the initial root directory along the autocip binary :
+ \begin{itemize}
+  \item{ na2.dat, for step 1  (F\_PSHF)}
+  \item{ na2sym.dat, for step 2 (F\_SYM) } 
+  \item{ na2dip.dat, for step 3 (F\_MDIP)}
+\end{itemize}~
+\\[12pt]
+See file sym\_check.f90 for notation of the available symmetries : point group 'DINFH','CINFV','CNV','CNH','CS','C1','DNH'.
+
+\section{auto.in}
+
+The input file must start with the 12 lines explained in the subsection \ref{init}. Autocip will make sequential call to 'read(5,*)', each line have to start with the correct type and correct number of variables (ex : real, integer, logical, string). A format mismatch will probably crash the program. Anything written on a line after the requested variables won't be read by the program. After the first fixed lines, the input files should also contained several block depending on the calculation performed (:grid:, :method:, :symmetries:, :electricfield:, :dipolemoments:, :diabatization:). Each block start by the line with the name of the block followed by a fixed number of line explained in the following subsections.  
+
+
+In the tables, variables in paranthese in the Type column correspond to the dimension of the array, multiplication indicate that the type is repeated several times.
+
+The environment variable \$CIPSI\_ROOT must be included in the PATH of the user. Binary files directory (and Pseudopotential) are given relative to this root directory.
+
+\subsection{initialization}
+\label{init}
+
+\begin{tabular}{|crp{110mm}|}         \hline
+\bf{Type} & \bf{Name} & \hspace{4cm}\bf{Explanation}\\ \hline
+Logical & l\_calc & if false the program will only sort preexisting result (grid definition must be identical between the 'calc' and the 'sort' run !)\\\hline
+String & bindir & subdirectory of the CIPSI binary\\\hline
+String & bash\_command & additional command used to call the CIPSI bin (for example a valgrind call)\\\hline
+Null & & This variable is only used by the script calling autocip. The line can be left empty but still must be here.  \\\hline
+Integer, Integer & ncore & number of core \\
+                 & nelac & number of electron \\\hline
+String(ncore) & atom & name of each nucleus \\\hline
+String & f\_pshf & name of the file containing the namelist used by pshf/rcut/cval/ijkl/fock \\\hline
+String & opt\_rc & 'RPOL' or 'RCUT' \\\hline
+Logical, Integer, Integer & l\_mono & if true extract the mono-electronic energies from the raw output\\
+                          & l\_max & energies are given for Lambda from 0 to l\_max \\
+                          &  nvec & number of mono-electronic energies for each Lambda symmetry\\\hline
+Logical*3, Integer*3 & l\_cip & if true run the CI calculation\\
+& l\_dip & if true compute the dipole moments \\
+& l\_vcc & if true add a short range and a long range term to the energies (deprecated : option should not be used)\\
+& a\_rep & parameter for the short range term\\
+& b\_rep & \\
+& c\_rep & \\ \hline
+Logical, Logical & l\_efield & if true do the computation with an external electric field, :electricfield: block needed \\
+&l\_efield\_1& ? \\\hline
+Logical, Logical & l\_diab& option 'True' not available\\
+&  l\_calcref & -- \\\hline
+\end{tabular}
+
+\subsection{:grid: block}
+
+\begin{tabular}{|crp{110mm}|}         \hline
+\bf{Type} & \bf{Name} & \hspace{4cm}\bf{Explanation}\\ \hline
+String, Logical & group& Point group for the calculation \\
+ & l\_com & if true origin = center-of-mass else origin = center-of-charge\\ \hline
+String & grid\_method & 'grid' or 'lhs' or 'list'. Method used to define the geometry of the system : take points on a grid, or take random points in an hypercube using the Latin Hypercube Sampling method, or read a file with each geometry given \\ \hline
+String & coordinate & unused for dimers. For trimers : 'jacobi' (adapted to the A + BC system), 'hyperspherical' (from Smith-Whitten), 'internuclear distance'\\ 
+ &  &  For tetramers : 'jacobi' (adapted to the AB + CD system), dnh-jacobi (adapted to the AC + BD system), 'internuclear distance', not implemented yet : hyperspherical \\
+ & & (note the program only read the first character of the string)\\ \hline
+Real(ndim) & gridmin & lowest values of the box for each dimension\\ \hline
+Real(ndim) & gridmax & maximal values of the box for each dimension \\ \hline
+option dependent & & \\ 
+Real(ndim) & grid\_step & for 'grid' : the step of the grid for each dimension, a step bigger than the size of the box can be used for single point calculation at R=R\_min \\ 
+Real & nz & 'LHS' : number of points of the design \\
+String & grid\_file & 'list' : name of the file containing the geometries. The file must start with the N number of points followed by N line describing each one geometry\\ \hline
+Real & lower\_bound & points with one or more internuclear distances below this value are excluded from the calculation \\ \hline 
+\end{tabular}
+
+\subsection{:method: block}
+
+\begin{tabular}{|crp{110mm}|}         \hline
+\bf{Type} & \bf{Name} & \hspace{4cm}\bf{Explanation}\\ \hline
+Logical & l\_fci & true : Full-CI, false : CI-PSI\\\hline
+Integer, Integer & noac & number of orbitals of the starting active space. -1 : all orbitals taken, else the program try to add orbitals allowing construction of mono-excited determinants of the required symmetry \\ 
+ & nexmax & determinants with excitation higher than nexmax are excluded from the initial active space (for uneven number of electron the program automatically adjust the excitation to take into account the virtual electron used by CIPSI)\\ \hline
+Integer, Real & netat & use convergence criteria envp\_max for the first netat state, higher states will have lower precision (check vthresh output file) \\ 
+(not used by FCI)& envp\_max & maximum value of the contribution of the 'perturbative' space (ie of the determinant not included in the calculation), can be taken as an approximate error bar for the CIPSI run compared to the FCI\\ \hline
+ Real, Real & tau\_init & initial value of TAU and TEST in the cip namelist\\ 
+ (not used by FCI) & tau\_step & step value for TAU, must be lower than 1 : after each loop TAU=TAU*TAU\_STEP\\ \hline
+Integer*4 & det\_bounds & minimum and maximum number of determinant in the reference space, min. and max. number of determinants in the total space \\ (not used by FCI) & & the minimal size of the ref. space is needed by the algorithm, the other values are constraints in case of limited computer time and can be set to zero/infinity if needed  \\ & & the program will keep iterating until the minimum values are reached. If the maximum values are reached before convergence, an error message will be displayed and further calculation on this geometry will be skipped \\ \hline
+Logical & ysort & automatic detection of parasite state for CINFV/DINFH : \\ \hline
+Real & trec & initial value for TREC in ijkl namelist, the program will try to adjust the value automatically if the run encounter errors\\ \hline
+\end{tabular}
+
+\subsection{:symmetries: block}
+
+\begin{tabular}{|crp{110mm}|}         \hline
+\bf{Type} & \bf{Name} & \hspace{4cm}\bf{Explanation}\\ \hline
+String & f\_sym & name of the file containing cip, moy and bd namelists\\\hline
+Integer, Integer & nsym & number of symmetry asked\\ 
+& metat & number of state asked for each symmetry\\ \hline
+String(nsym) & sym & name of each symmetry, the program will checked that each symmetry is compatible with the point group. See sym\_check.f90 source file for a list of point group and their symmetry\\ \hline
+Integer*6 & isymat & the six integers correspond resp. to singlet/doublet/triplet/quartet/quintet/sextet. Creation and diagonalization of the corresponding spin-symmetrized CI matrix is done if isymat=1 and not done if isymat=0. Additionally the first integer can have the value -1, for a diagonalisation of the full matrix with no symmetrisation (in this case the spin of each state is determined afterwards). \\ \hline
+\end{tabular}
+
+\subsection{:electricfield: block}
+
+\begin{tabular}{|crp{110mm}|}         \hline
+\bf{Type} & \bf{Name} & \hspace{4cm}\bf{Explanation}\\ \hline
+String & efield\_dirn & axis of the electric field : 'x', 'y' or 'z'\\\hline
+Integer & nfield & number  \\ \hline
+Real(nfield) & efield\_vals & values of the amplitude of the electric field\\ \hline
+Logical & l\_ffield & if true, compute PDM and polarisability with the finite field method (not fully implemented, currently just gather all energy output) \\ \hline
+\end{tabular}
+
+\subsection{:dipolemoments: block}
+\begin{tabular}{|crp{110mm}|}         \hline
+\bf{Type} & \bf{Name} & \hspace{4cm}\bf{Explanation}\\ \hline
+String & f\_mdip & name of the file with the ciro namelist\\\hline
+Integer & ncom & number of transition dipole moment combinaison to be computed\\ \hline
+String, String & com1, com2 & each line contain the name of the symmetry for the starting state, and the one for the final state.\\ \hline
+- & & the block must have ncom lines of symmetry combinaison\\ \hline
+\end{tabular}
+
+\subsection{:diabatization: block}
+
+Not available in the current version
+
+\subsection{example}
+
+example of input :\\
+
+\quote
+t\\
+'bin' \\
+''\\
+tmp\\
+2,2\\
+'Rb','Rb'\\
+'rb2.dat'\\
+'rpol'\\
+t,3,20\\
+t,t,f,0,0,0\\
+f,f,\\
+f,f,\\
+\\
+\# configuration block \# \\
+\\
+:grid:\\
+'DINFH',t\\
+'grid'\\
+'jacobi'\\
+11.45\\
+30.0\\
+100.\\
+5.0 \\
+\\
+:method:\\
+t\\
+-1,2\\ 
+1,1d-5\\
+0.1,0.5\\
+2000,20000,0,1000000\\
+T\\
+1d-4\\
+\\
+:symmetries:\\
+'rb2sym.dat'\\
+3,15\\
+'spu','spg','pxg'\\
+1,0,1,0,0,0\\
+\\
+:electricfield:\\
+'y'\\
+6 \\
+0.0,0.0001,0.0002,0.0003,0.0004,0.0005\\
+f \\
+\\
+:dipolemoments:\\
+'rb2dip.dat'\\
+2         \\ 
+'spu','spg'\\
+'spu','pxg'\\
+
+
+
+\end{document}
