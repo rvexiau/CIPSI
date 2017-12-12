@@ -30,14 +30,14 @@ case ${LOADL_STEP_NAME} in
     set -ex
     cd $TMPDIR
     mfget input/* cip_run/    
-    cp $WORKDIR/cipsi/bin/Autocip13 cip_run/
+    cp $WORKDIR/cipsi/bin/Autocip13.exe cip_run/
   ;;
   exec )
     set -x
     module load idrmem
     cd $TMPDIR/cip_run
     date > idris.out
-    ./Autocip13<auto.in >> idris.out 2>>idris.out 
+    ./Autocip13.exe<auto.in >> idris.out 2>>idris.out 
     date >> idris.out
     cat idris.out
   ;;

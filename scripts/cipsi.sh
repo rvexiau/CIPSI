@@ -5,8 +5,8 @@
 #SBATCH --mail-type=END	
 #SBATCH --mail-user=romain.vexiau@u-psud.fr	
 #SBATCH --output=./lumat.stdout		# if --error is absent, includes also the errors
-#SBATCH --mem=56G 				# T-tera, G-giga, M-mega
-#SBATCH --cpus-per-task=8
+#SBATCH --mem=28G 				# T-tera, G-giga, M-mega
+#SBATCH --cpus-per-task=4
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
 
@@ -38,13 +38,13 @@ echo "--------------------------------------------------------------------------
 module load intel/14.0.5
 export OMP_NUM_THREADS=$SLURM_JOB_CPUS_PER_NODE
 
-#cp *.dat $TMPDIR/
-#cp Autocip13 $TMPDIR/
-#cp auto.in $TMPDIR/
-#cd $TMPDIR
+cp *.dat $TMPDIR/
+cp Autocip13.exe $TMPDIR/
+cp auto.in $TMPDIR/
+cd $TMPDIR
 
-export CIPSI_WORK=$TMPDIR 
-./Autocip13<auto.in
+# export CIPSI_WORK=$TMPDIR 
+./Autocip13.exe<auto.in
 
 find . -name "*_mat*" -type f -delete
 find . -name "*fort*" -type f -delete
@@ -61,9 +61,9 @@ find . -name "F10_*" -type f -delete
 find . -name "*_dcla*" -type f -delete
 find . -name "*_dspina*" -type f -delete      
 
-#result=`sed -n 4p auto.in`
-#tar -zcf lumat.tar.gz *
+result=`sed -n 4p auto.in`
+tar -zcf lumat.tar.gz *
     
-#mv lumat.tar.gz /home/romain_vexiau/results/Cipsi/$result
+mv lumat.tar.gz /home/romain_vexiau/results/Cipsi/$result
 
 # end of the USER commands

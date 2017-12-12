@@ -1,44 +1,41 @@
-# Makefile
-NAME=Autocip13
+# Makefile, optional argument : define CLUSTER to use -axAVX,SSE4.2 flag
 
-FFLAGS= -I$(MKLROOT)/include -O3 -c -openmp -mkl=parallel
-LFLAGS= -I$(MKLROOT)/include -O3 -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lpthread -openmp -mkl=parallel
+ifdef CLUSTER
+    COMP= ifort
+    OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -openmp -mkl=parallel -mcmodel=medium -shared-intel -axAVX,SSE4.2
+    LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core  
+else
+    CHECK := $(shell command -V ifort 2> /dev/null)
+    ifndef CHECK 				# ifort not available use gfortran
+        COMP= gfortran
+    else					# use ifort
+        COMP= ifort  
+        OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -qopenmp -mkl=parallel -mcmodel=medium -shared-intel -xhost
+        LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core 
+    endif
+endif
 
-#FFLAGS= -I$(MKLROOT)/include -g -c -openmp -mkl=parallel
-#LFLAGS= -I$(MKLROOT)/include -g -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lpthread -openmp -mkl=parallel
+Foldauto= ./
+OBJSauto = ${Foldauto}timestamp.o ${Foldauto}lhs.o ${Foldauto}io_unit.o ${Foldauto}m_mrgrnk.o ${Foldauto}makegrid.o ${Foldauto}autocip13.o ${Foldauto}masses.o\
+${Foldauto}tri_mono.o ${Foldauto}makedata.o ${Foldauto}makedata_pshf.o ${Foldauto}makedata_cip.o ${Foldauto}makedata_ciro.o ${Foldauto}calcul.o\
+${Foldauto}ffield.o ${Foldauto}utils.o ${Foldauto}sym_check.o ${Foldauto}spin.o
 
-COMP= ifort
-# COMP= gfortran
-OBJS = \
-timestamp.o\
-lhs.o\
-io_unit.o\
-m_mrgrnk.o\
-makegrid.o\
-autocip13.o\
-masses.o\
-tri_mono.o\
-makedata.o\
-makedata_pshf.o\
-makedata_cip.o\
-makedata_ciro.o\
-calcul.o\
-ffield.o\
-utils.o\
-sym_check.o\
-spin.o
+all: clean Autocip13.exe
+
+	
+Autocip13.exe:	$(OBJSauto)
+	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
+	mv $@ ../bin/
+	rm -f *.mod
 
 .SUFFIXES: .o .f90 .f
 
 .f90.o:
-	$(COMP) $(FFLAGS) -c $^ -o $@	
+	$(COMP) $(OPT_LVL) -c $^ -o $@	
+.f.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@		
 	
-Autocip13:	$(OBJS)
-	$(COMP) $(LFLAGS) $(OBJS) -o $(NAME)
-	rm -f ../bin/$(NAME)
-	cp $(NAME) ../bin
-	make clean
 	
 clean:
-	rm $(OBJS) $(NAME) *.mod
+	rm -f ../bin/Autocip13.exe *.mod
 

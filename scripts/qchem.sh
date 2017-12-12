@@ -25,16 +25,18 @@ if [ "$prog" == "r" ] ; then
    read Task
   
   if [ "$Task" == "l" ] ; then
-   echo "use lumat to compile"
+    cd $CIPSI_ROOT
+    make
   fi
   
   if [ "$Task" == "u" ] ; then
    rsync -az $CIPSI_ROOT/compile.sh lumat:cipsi/     
+   rsync -az $CIPSI_ROOT/makefile lumat:cipsi/      
    rsync -az $CIPSI_ROOT/Autocip_13/* lumat:cipsi/Autocip_13/   
    rsync -az $CIPSI_ROOT/CIPSI_sources/* lumat:cipsi/CIPSI_sources/   
    ssh -t -t lumat << EOL2
    cd cipsi
-   ./compile.sh
+   make CLUSTER=true
    exit
 EOL2
   fi
@@ -44,6 +46,7 @@ EOL2
    rsync -az $CIPSI_ROOT/Autocip_13 $CIPSI_ROOT/idris/
    rsync -az $CIPSI_ROOT/CIPSI_sources/* $CIPSI_ROOT/idris/CIPSI_sources/
    rsync $CIPSI_ROOT/compile.sh $CIPSI_ROOT/idris/ 
+   rsync $CIPSI_ROOT/makefile $CIPSI_ROOT/idris/    
    cd $CIPSI_ROOT/idris
    rm cipsi.tar.gz
    rm -f ergon:cipsi.tar.gz
@@ -55,7 +58,7 @@ EOL2
      cd "\$WORKDIR"
      tar -zxf cipsi.tar.gz -C cipsi/      
      cd cipsi
-     ./compile.sh
+     make CLUSTER=true
      exit
 EOL3
   fi
@@ -68,20 +71,23 @@ if [ "$prog" == "f" ] ; then
    
    if [ "$Task" == "u" ] ; then
      result=`sed -n 4p input/auto.in`
-     ssh -t -t lumat << EOL4
-       cd /data/vexiau/
-       tar -zcf lumat.tar.gz $result
-       exit   
-EOL4
+     mkdir $result
+     cd $result
+     
+#     ssh -t -t lumat << EOL4
+#       cd /data/vexiau/
+#       tar -zcf lumat.tar.gz $result
+#       exit   
+#EOL4
 
 #     rsync -az lumat:results/Cipsi/$result/ ./$result  
-     rsync -az --progress lumat:/data/vexiau/lumat.tar.gz ./  
+     rsync -az --progress lumat:results/Cipsi/$result/lumat.tar.gz ./  
+     rsync -az --progress lumat:results/Cipsi/$result/lumat.stdout ./      
      tar -zxf lumat.tar.gz
      rm lumat.tar.gz
      ssh -t -t lumat << EOL7
-       cd /data/vexiau/
+       cd ~/results/Cipsi/
        rm -r $result
-       rm lumat.tar.gz
        exit   
 EOL7
   fi
@@ -107,26 +113,26 @@ if [ "$prog" == "c" ] ; then
   if [ "$Task" == "l" ] ; then
    result=`sed -n 4p input/auto.in`  
    rsync -az input/* $result
-   rsync -az $CIPSI_ROOT/bin/Autocip13 $result
+   rsync -az $CIPSI_ROOT/bin/Autocip13.exe $result
    rsync $CIPSI_ROOT/bin/data/def_grid.dat $result
    cd $result
    export OMP_NUM_THREADS=4
 #   valgrind --leak-check=yes --track-origins=yes --suppressions=/home/romain/valgrind.supp --log-file="valgrind.out" ./Autocip12<auto.in 
-   ./Autocip13<auto.in>cipsi.out   
+   ./Autocip13.exe<auto.in>cipsi.out   
   fi
   
   if [ "$Task" == "u" ] ; then
    result=`sed -n 4p input/auto.in`
    rm -rf lumat:results/Cipsi/$result
-#   rsync input/* lumat:results/Cipsi/$result   
-#   rsync $CIPSI_ROOT/bin/cipsi.sh lumat:results/Cipsi/$result
-#   rsync $CIPSI_ROOT/bin/def_grid.dat lumat:results/Cipsi/$result  
-   rsync input/* lumat:/data/vexiau/$result   
-   rsync $CIPSI_ROOT/bin/cipsi.sh lumat:/data/vexiau/$result 
-   rsync $CIPSI_ROOT/bin/data/def_grid.dat lumat:/data/vexiau/$result 
+   rsync input/* lumat:results/Cipsi/$result   
+   rsync $CIPSI_ROOT/scripts/cipsi.sh lumat:results/Cipsi/$result
+   rsync $CIPSI_ROOT/bin/data/def_grid.dat lumat:results/Cipsi/$result  
+#   rsync input/* lumat:/data/vexiau/$result   
+#   rsync $CIPSI_ROOT/bin/cipsi.sh lumat:/data/vexiau/$result 
+#   rsync $CIPSI_ROOT/bin/data/def_grid.dat lumat:/data/vexiau/$result 
    ssh -t -t lumat << EOL6
-   cd /data/vexiau/$result
-   rsync ~/cipsi/bin/Autocip13 ./Autocip13
+   cd ~/results/Cipsi/$result
+   rsync ~/cipsi/bin/Autocip13.exe ./Autocip13.exe
    sbatch cipsi.sh
    squeue
    exit

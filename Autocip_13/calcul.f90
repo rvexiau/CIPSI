@@ -43,7 +43,7 @@ subroutine calcul_pshf(iz,opt,bindir,lb,workdir,threaddir,lw,f_tmp,f_tmp1,prefix
   command='rm -f COMB_VCPP'
   call system(trim(dir)//command)
                                         ! premier passage SCF
-  command=bindir(1:lb)//'/pshf<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.pshf'
+  command=bindir(1:lb)//'/pshf.exe<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.pshf'
   call bash_exec(command,dir,'pshf',io_output+rang*100,bash_command)
       open(io_work+rang*100,file=trim(threaddir)//'/'//prefix(1:lpr-1)//'.pshf')     !extraction de NREC et mod des namelists
       call find_str(io_work+rang*100,'nombre de blocs sur la file'&
@@ -58,11 +58,11 @@ subroutine calcul_pshf(iz,opt,bindir,lb,workdir,threaddir,lw,f_tmp,f_tmp1,prefix
                                        ! calcul integrales champ electrique local
   if((opt=='rpol').or.(opt=='RPOL'))then
      ! JD 01/09 new chain for correct long range behaviour following Romain Guerout
-     command=bindir(1:lb)//'/rpol<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.rpol'
+     command=bindir(1:lb)//'/rpol.exe<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.rpol'
      call bash_exec(command,dir,'rpol',io_output+rang*100,bash_command)
 
      ! correction coeur valence
-      command=bindir(1:lb)//'/cval<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.cval'
+      command=bindir(1:lb)//'/cval.exe<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.cval'
       call bash_exec(command,dir,'cval',io_output+rang*100,bash_command)
       
       open(io_work+rang*100,file=trim(threaddir)//'/'//prefix(1:lpr-1)//'.cval')     !extraction de NREC et mod des namelists
@@ -75,7 +75,7 @@ subroutine calcul_pshf(iz,opt,bindir,lb,workdir,threaddir,lw,f_tmp,f_tmp1,prefix
       call system(trim(dir)//command)
       
      ! second passage SCF
-      command=bindir(1:lb)//'/pshf<'//f_tmp1(1:lt1)//'>'//prefix(1:lpr-1)//'.pshfcv0'//cz(kz:kz+lz)
+      command=bindir(1:lb)//'/pshf.exe<'//f_tmp1(1:lt1)//'>'//prefix(1:lpr-1)//'.pshfcv0'//cz(kz:kz+lz)
       call bash_exec(command,dir,'pshf',io_output+rang*100,bash_command) 
 
       ! copy and rename files
@@ -88,20 +88,20 @@ subroutine calcul_pshf(iz,opt,bindir,lb,workdir,threaddir,lw,f_tmp,f_tmp1,prefix
       ! save the vcpp created by rpol
       call copy2_file(trim(threaddir)//'/'//prefix(1:lpr)//'vcpp',trim(threaddir)//'/'//'VCPP_RPOL')      
       ! 2nd run
-      command=bindir(1:lb)//'/rcut<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.rcut'
+      command=bindir(1:lb)//'/rcut.exe<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.rcut'
       call bash_exec(command,dir,'rcut',io_output+rang*100,bash_command)
 
   elseif((opt=='rcut').or.(opt=='RCUT'))then
-    command=bindir(1:lb)//'/rcut<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.rcut'
+    command=bindir(1:lb)//'/rcut.exe<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.rcut'
     call bash_exec(command,dir,'rcut',io_output+rang*100,bash_command)
   endif
 
   ! 2nd correction coeur valence
-  command=bindir(1:lb)//'/cval<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.cval2'
+  command=bindir(1:lb)//'/cval.exe<'//f_tmp(1:lt)//'>'//prefix(1:lpr-1)//'.cval2'
   call bash_exec(command,dir,'cval',io_output+rang*100,bash_command)
   
   ! last run of pshf
-  command=bindir(1:lb)//'/pshf<'//f_tmp1(1:lt1)//'>'//path(1:lp-1)//'.pshfcv'//cz(kz:kz+lz)
+  command=bindir(1:lb)//'/pshf.exe<'//f_tmp1(1:lt1)//'>'//path(1:lp-1)//'.pshfcv'//cz(kz:kz+lz)
   call bash_exec(command,dir,'pshf',io_output+rang*100,bash_command)
   f_pshfcv=prefix(1:lpr-1)//'.pshfcv'//cz(kz:kz+lz)
  
@@ -162,7 +162,7 @@ subroutine calcul_ijkl(iz,bindir,lb,workdir,threaddir,lw,f_tmp,prefix,f_ijkl,its
   ! RV 01/16 loop to catch bug and try to automatically correct trec 
   do i=1,100
 
-    command=bindir(1:lb)//'/ijkl<'//f_tmp(1:lt)//'>'//path(1:lp-1)// &
+    command=bindir(1:lb)//'/ijkl.exe<'//f_tmp(1:lt)//'>'//path(1:lp-1)// &
           & '.ijkl'//cz(kz:kz+lz)
     call bash_exec(command,dir,'ijkl',io_output+rang*100,bash_command)
 
@@ -207,7 +207,7 @@ subroutine calcul_ijkl(iz,bindir,lb,workdir,threaddir,lw,f_tmp,prefix,f_ijkl,its
   command= 'sed -i "s# TREC=.*# TREC='//trec_str//',#" '//f_tmp(1:lt)
   call system(trim(dir)//command)
                                           ! integrales de Fock
-  command=bindir(1:lb)//'/fock<'//f_tmp(1:lt)//'>'//path(1:lp-1)//'.fock'//cz(kz:kz+lz)
+  command=bindir(1:lb)//'/fock.exe<'//f_tmp(1:lt)//'>'//path(1:lp-1)//'.fock'//cz(kz:kz+lz)
   call bash_exec(command,dir,'fock',io_output+rang*100,bash_command)
   
   open(io_work+rang*100,form='unformatted',status='unknown       ',file=trim(threaddir)//'/'//prefix(1:lpr)//'ijkl')
@@ -244,7 +244,7 @@ subroutine calcul_som(iz,bindir,lb,workdir,lw,threaddir,f_som,prefix,rang,bash_c
   kz=longu(cz)
   lz=len_trim(cz)
 
-  command=bindir(1:lb)//'/som<'//f_som(1:lsom)//'>'//path(1:lp-1)//'.som'//cz(kz:kz+lz)
+  command=bindir(1:lb)//'/som.exe<'//f_som(1:lsom)//'>'//path(1:lp-1)//'.som'//cz(kz:kz+lz)
   call bash_exec(command,dir,'som',io_output+rang*100,bash_command)
 
   return
@@ -289,11 +289,11 @@ subroutine calcul_cip(iz,bindir,lb,workdir,threaddir,lw,f_bd,prefix,isymat,sym,f
   tau=tau_init
   dir='cd '//trim(threaddir)//';'
   if(isymat(1).ge.0) then  
-    moy_str='moysym'
-    bd_str='bdsym'
+    moy_str='moysym.exe'
+    bd_str='bdsym.exe'
   else
-    moy_str='moy'
-    bd_str='bd'
+    moy_str='moy.exe'
+    bd_str='bd.exe'
   endif
 
   if(imax_s.gt.0) then
@@ -315,16 +315,16 @@ subroutine calcul_cip(iz,bindir,lb,workdir,threaddir,lw,f_bd,prefix,isymat,sym,f
 
       command= 'sed -i "s# ITYPER=.*# ITYPER=-1,#" '//f_bd_calc(1:lbd)
       call system(trim(dir)//command)
-      command=bindir(1:lb)//'/cipsym<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.cip'//sym(1:ls)//cz(kz:kz+lz)
+      command=bindir(1:lb)//'/cipsym.exe<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.cip'//sym(1:ls)//cz(kz:kz+lz)
       call bash_exec(command,dir,'cip',io_output+rang*100,bash_command) 
       f_bd_calc=trim(f_bd)//'_loop'
       lbd=len_trim(f_bd_calc)
       
       command= 'sed -i "s# TAU=.*# TAU=0d0,#" '//f_bd_calc(1:lbd)
       call system(trim(dir)//command)
-      command=bindir(1:lb)//'/moy<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.moy'//sym(1:ls)//cz(kz:kz+lz)
+      command=bindir(1:lb)//'/moy.exe<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.moy'//sym(1:ls)//cz(kz:kz+lz)
       call bash_exec(command,dir,'moy',io_output+rang*100,bash_command)
-      command=bindir(1:lb)//'/bd<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.bd'//sym(1:ls)//cz(kz:kz+lz)
+      command=bindir(1:lb)//'/bd.exe<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.bd'//sym(1:ls)//cz(kz:kz+lz)
       call bash_exec(command,dir,'bd',io_output+rang*100,bash_command) 
       
    ! compute perturbation   
@@ -348,7 +348,7 @@ subroutine calcul_cip(iz,bindir,lb,workdir,threaddir,lw,f_bd,prefix,isymat,sym,f
       call system(trim(dir)//command)
       command= 'sed -i "s# ITYPER=.*# ITYPER=2,#" '//f_bd_calc(1:lbd)
       call system(trim(dir)//command)
-      command=bindir(1:lb)//'/cipsym<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.cip'//sym(1:ls)//cz(kz:kz+lz)
+      command=bindir(1:lb)//'/cipsym.exe<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.cip'//sym(1:ls)//cz(kz:kz+lz)
       call bash_exec(command,dir,'cip',io_output+rang*100,bash_command)
 
       ! Reference matrix with at least minmal number (det_bounds(1)) of determinant 
@@ -438,7 +438,7 @@ subroutine calcul_cip(iz,bindir,lb,workdir,threaddir,lw,f_bd,prefix,isymat,sym,f
   else
     write(io_output+rang*100,*) 'FCI method'
     energ2=0d0
-    command=bindir(1:lb)//'/cipsym<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.cip'//sym(1:ls)//cz(kz:kz+lz)
+    command=bindir(1:lb)//'/cipsym.exe<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.cip'//sym(1:ls)//cz(kz:kz+lz)
     call bash_exec(command,dir,'cip',io_output+rang*100,bash_command)
     f_bd_calc=trim(f_bd)//'_end'
     lbd=len_trim(f_bd_calc)
@@ -460,12 +460,12 @@ subroutine calcul_cip(iz,bindir,lb,workdir,threaddir,lw,f_bd,prefix,isymat,sym,f
   write(io_output+rang*100,*) '     Final computation, determinant :',ncf
   
   if(isymat(1).ge.0) then
-    command=bindir(1:lb)//'/spinsym<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.spin'//sym(1:ls)//cz(kz:kz+lz)
+    command=bindir(1:lb)//'/spinsym.exe<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.spin'//sym(1:ls)//cz(kz:kz+lz)
     call bash_exec(command,dir,'spin',io_output+rang*100,bash_command)
   elseif(isymat(1).eq.-99) then
     write(*,*) 'skip spin computation (the sorting will crash)'
   else
-    command=bindir(1:lb)//'/spin<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.spin'//sym(1:ls)//cz(kz:kz+lz)
+    command=bindir(1:lb)//'/spin.exe<'//f_bd_calc(1:lbd)//'>'//path(1:lp-1)//'.spin'//sym(1:ls)//cz(kz:kz+lz)
     call bash_exec(command,dir,'spin',io_output+rang*100,bash_command)
   endif
   
@@ -500,7 +500,7 @@ subroutine calcul_hdiab(iz,bindir,lb,workdir,lw,threaddir,f_hdiab,sym,prefix,ran
   ldiab=len_trim(f_hdiab)
   dir='cd '//trim(threaddir)//';'  
 
-  command=bindir(1:lb)//'/hdiab<'//f_hdiab(1:ldiab)//'>'//path(1:lp-1)//'.hdiab'//sym(1:ls)//cz(kz:kz+lz)
+  command=bindir(1:lb)//'/hdiab.exe<'//f_hdiab(1:ldiab)//'>'//path(1:lp-1)//'.hdiab'//sym(1:ls)//cz(kz:kz+lz)
   call bash_exec(command,dir,'hdiab',io_output+rang*100,bash_command)
 
   return
@@ -532,7 +532,7 @@ subroutine calcul_ciro(iz,bindir,lb,workdir,threaddir,lw,f_ciro,prefix,sym_1,sym
   lz=len_trim(cz)
   f_dip=prefix(1:lpr-1)//'.ciro'//sym_1(1:l1)//sym_2(1:l2)//cz(kz:kz+lz)
 
-  command=bindir(1:lb)//'/ciro<'//f_ciro(1:lcir)//'>'//path(1:lp-1)//&
+  command=bindir(1:lb)//'/ciro.exe<'//f_ciro(1:lcir)//'>'//path(1:lp-1)//&
            &'.ciro'//sym_1(1:l1)//sym_2(1:l2)//cz(kz:kz+lz)
   call bash_exec(command,dir,'ciro',io_output+rang*100,bash_command)
 

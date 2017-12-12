@@ -424,6 +424,7 @@ program auto
     l_accept=.false.
   endif  
 
+  write(*,*) "Starting computing main loop *****"
   
 ! ************************************************************************************************************************  
 ! ************************************************************************************************************************  
@@ -667,6 +668,7 @@ program auto
   endif
   
   ! start sorting the results
+  write(*,*) "Main loop done, sorting the results"
   
   if(l_diab)then
     nzR=nz+1	! sort also reference state
