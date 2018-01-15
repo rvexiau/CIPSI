@@ -38,7 +38,7 @@ subroutine tri_mono(l_work,workdir,l_max,nvec,ncore,f_pshfcv,nf)
   !
   ! SUBROUTINES:
   ! find_str: recherche d'ne chaine dans un fichier
-  ! long: longueur d'une chaine (sans blanc)
+  ! longchain: longueur d'une chaine (sans blanc)
   ! cex2: conversion d'un entier (<99) en chaine de longueur 2
   ! divise: resultat de la division de deux entiers
   ! version 1: fevrier 2004, O.D.
@@ -49,7 +49,7 @@ subroutine tri_mono(l_work,workdir,l_max,nvec,ncore,f_pshfcv,nf)
   integer :: nsym,nvec,nf,istatus,iline,l_str,n_basis,l_max,n_ug,ns_tri,at_num,l_work,nprint,ncore
   integer :: n_shell(2),n_oa(2)
   integer :: ifile,ie,iv,ib,i,j,il,iug
-  integer :: divise,long
+  integer :: divise,longchain
   integer :: l_om(16),l_oa(4),sh_typ(4,2),oa_pos(4,2),n_mono(4,2)
   integer, dimension(:), allocatable :: centre,l_orb
   integer, dimension(:,:), allocatable :: n_tri
@@ -90,7 +90,7 @@ subroutine tri_mono(l_work,workdir,l_max,nvec,ncore,f_pshfcv,nf)
   do ifile=1,nf                    ! boucle liste fichiers
     file_in=f_pshfcv(ifile)
     open(io_work,file=workdir(1:l_work)//'/'//file_in,iostat=istatus)
-    write(io_output,*)'ouverture ',file_in(1:long(file_in))
+    write(io_output,*)'ouverture ',file_in(1:longchain(file_in))
 
     rewind(io_work)                 ! lecture de la base
 
@@ -541,14 +541,14 @@ subroutine tri_mono(l_work,workdir,l_max,nvec,ncore,f_pshfcv,nf)
   return
 end subroutine tri_mono
 
-function long(fich)
+function longchain(fich)
   ! real length of a character chain
   implicit none
-  integer :: i,long
+  integer :: i,longchain
   character(len=*),intent(in) :: fich
   do i = 1,120
     if(fich(i:i)==' ')exit
   enddo
-  long = i-1
+  longchain = i-1
   return
-end function long
+end function longchain

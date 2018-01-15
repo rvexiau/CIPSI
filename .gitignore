@@ -9,3 +9,4 @@ bin/backup/
 *.aux
 *.log
 *.tex.backup
+*.mod

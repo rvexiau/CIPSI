@@ -1,13 +1,24 @@
 # Makefile
-NAME=ciro
-FFLAGS= -c -O2 -shared-intel -mcmodel=large 
-LFLAGS= -O2 -I$(MKLROOT)/include -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -mcmodel=large
-# FFLAGS= -c -i_dynamic -mcmodel=large
-# LFLAGS= -i_dynamic -mcmodel=large
-# FFLAGS= -c -O2 -m32 -fbounds-check
-# LFLAGS= -m32 -fbounds-check
-COMP=ifort
-OBJS = \
+NAME=ciro.exe
+
+ifdef CLUSTER
+    COMP= ifort
+    OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -axAVX,SSE4.2
+    LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core  
+else
+    CHECK := $(shell command -V ifort 2> /dev/null)
+    ifndef CHECK 				# ifort not available use gfortran
+        COMP= gfortran
+        OPT_LVL= -O3 -mcmodel=medium -ffree-line-length-none -std=legacy
+        LIB= -lblas -llapack
+    else					# use ifort
+        COMP= ifort  
+        OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -xhost
+        LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core 
+    endif
+endif
+
+OBJSciro = \
 hermit.o\
 aolim.o\
 atpop.o\
@@ -43,16 +54,19 @@ stkener.o\
 tracp.o\
 vint.o\
 xyzdip.o
-%.o: %.f
-	$(COMP) $(FFLAGS) $*.f
-%.o: %.f90
-	$(COMP) $(FFLAGS) $*.f90	
 
-ciro:	$(OBJS)
-	$(COMP) $(LFLAGS) $(OBJS) -o $(NAME)
-	rm -f ../../bin/$(NAME)
-	cp $(NAME) ../../bin/
+all: ciro.exe
+
+ciro.exe:	$(OBJSciro)
+	$(COMP) $(OPT_LVL) $(LIB) -o ../../bin/$@ $^ 
+	
+.SUFFIXES: .o .f90 .f
+
+.f90.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@	
+.f.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@		
 	
 clean:
-	rm $(OBJS) $(NAME)
+	rm $(OBJS) ../../bin/$(NAME)
 

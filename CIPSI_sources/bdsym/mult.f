@@ -1,5 +1,6 @@
       subroutine mult(fmul,ncf,c)                                       
-      implicit real*8(a-h,o-x,z),logical*1 (y)                          
+      implicit real*8(a-h,o-x,z),logical*1 (y)     
+      integer smax      
       include 'bd.prm'
       integer*4 ne,nd,trou,part,iorb,iwspin,itsym,its,isytr,nesp,nespo  
       integer*4 imul                                                    

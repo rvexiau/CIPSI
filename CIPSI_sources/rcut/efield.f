@@ -2,6 +2,7 @@
 Ccc   RG : modified on 25/11/08 : Differential calculation modifications      
 Ccc   RG : modified on 26/11/08 : Output of the operators disabled
 Ccc   RG : modified on 06/05/09 : Now reads the CPP operator from rpol
+Ccc   RV : modified on 01/01/18 : bandaid fix, rpol files read on second run only
       implicit double precision (a-h,o-z)
       double precision i1sr4
       integer ent,sor,pl,pl1,plmax,plder,casp
@@ -362,10 +363,12 @@ cCc =================================================
 !!$  >>> debug <<<          
           write(*,*) 'flag1 ',4*nat*nnp 
 !!$  >>> debug <<<          
+        else        ! RV 01/2018
           inquire(file='VCPP_RPOL',exist=exist)
           if(.not.exist) then
-            stop 'file VCPP_RPOL does not exist for the differential'
-     +' calculation'
+            write(*,*) 
+     +'file VCPP_RPOL does not exist for the differential calculation'
+            stop 
           endif
           open(unit=20,file='VCPP_RPOL',form='unformatted')
           iii=0
@@ -375,7 +378,7 @@ cCc =================================================
           enddo
           close(20)
           write(*,*) 'Have read VCPP_RPOL'
-        else
+c        else
 cCc ============================================
 cCc = Here comes the differential calculation. =
 cCc ============================================ 

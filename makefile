@@ -8,6 +8,8 @@ else
     CHECK := $(shell command -V ifort 2> /dev/null)
     ifndef CHECK 				# ifort not available use gfortran
         COMP= gfortran
+        OPT_LVL= -O3 -mcmodel=medium -ffree-line-length-none -std=legacy
+        LIB= -lblas -llapack
     else					# use ifort
         COMP= ifort  
         OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -xhost
@@ -37,14 +39,14 @@ ${Foldbdsym}wvec.o ${Foldbdsym}diagonaliser.o
 
 Foldcip= CIPSI_sources/cip/
 OBJScip = ${Foldcip}diagonaliser.o ${Foldcip}ai.o ${Foldcip}brdnee.o ${Foldcip}cas.o ${Foldcip}cip.o ${Foldcip}cnvmul.o ${Foldcip}cotra.o ${Foldcip}deter.o\
- ${Foldcip}diexcit.o ${Foldcip}faifoc.o ${Foldcip}given.o ${Foldcip}hdig.o ${Foldcip}hmp.o ${Foldcip}hntd.o ${Foldcip}ic001.o ${Foldcip}igene.o ${Foldcip}ijkf.o\
+ ${Foldcip}diexcit.o ${Foldcip}faifoc.o ${Foldcip}hdig.o ${Foldcip}hmp.o ${Foldcip}hntd.o ${Foldcip}ic001.o ${Foldcip}igene.o ${Foldcip}ijkf.o\
  ${Foldcip}initab.o ${Foldcip}initsm.o ${Foldcip}isto.o ${Foldcip}jacscf.o ${Foldcip}lec60.o ${Foldcip}lecnew.o ${Foldcip}mult.o ${Foldcip}nomf.o ${Foldcip}nomfil.o\
  ${Foldcip}openf.o ${Foldcip}pert1.o ${Foldcip}pertu.o ${Foldcip}pie.o ${Foldcip}ran.o ${Foldcip}recsym.o ${Foldcip}reijkl.o ${Foldcip}rdener.o ${Foldcip}shell.o\
  ${Foldcip}sntd.o ${Foldcip}spasym.o ${Foldcip}stkener.o ${Foldcip}stktyp.o ${Foldcip}transf.o
 
 Foldcipsym= CIPSI_sources/cipsym/
 OBJScipsym = ${Foldcipsym}diagonaliser.o ${Foldcipsym}ai.o ${Foldcipsym}brdnee.o ${Foldcipsym}cas.o ${Foldcipsym}cip.o ${Foldcipsym}cnvmul.o ${Foldcipsym}cotra.o ${Foldcipsym}deter.o\
- ${Foldcipsym}diexcit.o ${Foldcipsym}faifoc.o ${Foldcipsym}given.o ${Foldcipsym}hdig.o ${Foldcipsym}hmp.o ${Foldcipsym}hntd.o ${Foldcipsym}ic001.o ${Foldcipsym}igene.o ${Foldcipsym}ijkf.o\
+ ${Foldcipsym}diexcit.o ${Foldcipsym}faifoc.o ${Foldcipsym}hdig.o ${Foldcipsym}hmp.o ${Foldcipsym}hntd.o ${Foldcipsym}ic001.o ${Foldcipsym}igene.o ${Foldcipsym}ijkf.o\
  ${Foldcipsym}initab.o ${Foldcipsym}initsm.o ${Foldcipsym}isto.o ${Foldcipsym}jacscf.o ${Foldcipsym}lec60.o ${Foldcipsym}lecnew.o ${Foldcipsym}mult.o ${Foldcipsym}nomf.o ${Foldcipsym}nomfil.o\
  ${Foldcipsym}openf.o ${Foldcipsym}pert1.o ${Foldcipsym}pertu.o ${Foldcipsym}pie.o ${Foldcipsym}ran.o ${Foldcipsym}recsym.o ${Foldcipsym}reijkl.o ${Foldcipsym}rdener.o ${Foldcipsym}shell.o\
  ${Foldcipsym}sntd.o ${Foldcipsym}spasym.o ${Foldcipsym}stkener.o ${Foldcipsym}stktyp.o ${Foldcipsym}transf.o
@@ -112,96 +114,109 @@ Foldhdiab= CIPSI_sources/hdiab/
 OBJShdiab = ${Foldhdiab}determ.o ${Foldhdiab}hdiab.o ${Foldhdiab}hdiag.o ${Foldhdiab}hrot.o ${Foldhdiab}hvp.o ${Foldhdiab}maxovl.o ${Foldhdiab}nomf.o ${Foldhdiab}nomfil.o ${Foldhdiab}openf.o ${Foldhdiab}readic.o\
  ${Foldhdiab}wrt.o ${Foldhdiab}wrtvec.o
 
-all: clean Autocip13 bd.exe bdsym.exe cip.exe cipsym.exe ciro.exe cval.exe fock.exe ijkl.exe moy.exe moysym.exe pshf.exe rcut.exe rpol.exe spin.exe spinsym.exe hdiab.exe 
+all: Autocip13 bd.exe bdsym.exe cip.exe cipsym.exe ciro.exe cval.exe fock.exe ijkl.exe moy.exe moysym.exe pshf.exe rcut.exe rpol.exe spin.exe spinsym.exe hdiab.exe 
 
 Autocip13:
 	$(MAKE) -e -C Autocip_13 
- 
-# Autocip13.exe:	$(OBJSauto)
-# 	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-# 	mv $@ bin/
-# 	rm -f *.mod
 	
-bd.exe:	$(OBJSbd)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
+bd.exe:
+	$(MAKE) -e -C CIPSI_sources/bd 
 	
-bdsym.exe:	$(OBJSbdsym)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod	
+bdsym.exe:
+	$(MAKE) -e -C CIPSI_sources/bdsym 	
+	
+cip.exe:
+	$(MAKE) -e -C CIPSI_sources/cip 
+	
+cipsym.exe:
+	$(MAKE) -e -C CIPSI_sources/cipsym 	
+	
+ciro.exe:
+	$(MAKE) -e -C CIPSI_sources/ciro 
+	
+cval.exe:
+	$(MAKE) -e -C CIPSI_sources/cval 	
+	
+fock.exe:
+	$(MAKE) -e -C CIPSI_sources/fock 
+	
+ijkl.exe:
+	$(MAKE) -e -C CIPSI_sources/ijkl 	
+	
+moy.exe:
+	$(MAKE) -e -C CIPSI_sources/moy 
+	
+moysym.exe:
+	$(MAKE) -e -C CIPSI_sources/moysym 	
+	
+pshf.exe:
+	$(MAKE) -e -C CIPSI_sources/pshf 
+	
+rcut.exe:
+	$(MAKE) -e -C CIPSI_sources/rcut 	
+	
+rpol.exe:	
+	$(MAKE) -e -C CIPSI_sources/rpol 
+	
+spin.exe:	
+	$(MAKE) -e -C CIPSI_sources/spin 
+	
+spinsym.exe:
+	$(MAKE) -e -C CIPSI_sources/spinsym
+	
+hdiab.exe:	
+	$(MAKE) -e -C CIPSI_sources/hdiab 
+	
+	
 
-cip.exe:	$(OBJScip)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-cipsym.exe:	$(OBJScipsym)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-ciro.exe:	$(OBJSciro)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-cval.exe:	$(OBJScval)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-fock.exe:	$(OBJSfock)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-ijkl.exe:	$(OBJSijkl)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-moy.exe:	$(OBJSmoy)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-moysym.exe:	$(OBJSmoysym)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-pshf.exe:	$(OBJSpshf)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-rcut.exe:	$(OBJSrcut)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-rpol.exe:	$(OBJSrpol)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-spin.exe:	$(OBJSspin)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-spinsym.exe:	$(OBJSspinsym)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod
-	
-hdiab.exe:	$(OBJShdiab)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ bin/
-	rm -f *.mod	
-	
+# bd.exe:	$(OBJSbd)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# bdsym.exe:	$(OBJSbdsym)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 
+# cip.exe:	$(OBJScip)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# cipsym.exe:	$(OBJScipsym)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# ciro.exe:	$(OBJSciro)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# cval.exe:	$(OBJScval)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# fock.exe:	$(OBJSfock)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# ijkl.exe:	$(OBJSijkl)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# moy.exe:	$(OBJSmoy)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# moysym.exe:	$(OBJSmoysym)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# pshf.exe:	$(OBJSpshf)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# rcut.exe:	$(OBJSrcut)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# rpol.exe:	$(OBJSrpol)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# spin.exe:	$(OBJSspin)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# spinsym.exe:	$(OBJSspinsym)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
+# hdiab.exe:	$(OBJShdiab)
+# 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
+# 	
 .SUFFIXES: .o .f90 .f
 
 .f90.o:
@@ -210,7 +225,7 @@ hdiab.exe:	$(OBJShdiab)
 	$(COMP) $(OPT_LVL) -c $^ -o $@		
 	
 clean:
-	rm -f bin/*.exe *.mod
+	rm -f bin/*.exe *.mod ${Foldauto}*.exe ${Foldbd}*.exe ${Foldbdsym}*.exe ${Foldcip}*.exe ${Foldcipsym}*.exe ${Foldciro}*.exe ${Foldcval}*.exe ${Foldfock}*.exe ${Foldijkl}*.exe ${Foldmoy}*.exe ${Foldmoysym}*.exe ${Foldpshf}*.exe ${Foldrcut}*.exe ${Foldrpol}*.exe ${Foldspin}*.exe ${Foldspinsym}*.exe ${Foldhdiab}*.exe 
 
 cleano:
 	rm -f $(OBJSauto) $(OBJSbd) $(OBJSbdsym) $(OBJScip) $(OBJScipsym) $(OBJSciro) $(OBJScval) $(OBJSfock) $(OBJSijkl) \

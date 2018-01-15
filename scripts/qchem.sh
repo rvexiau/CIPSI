@@ -36,7 +36,7 @@ if [ "$prog" == "r" ] ; then
    rsync -az $CIPSI_ROOT/CIPSI_sources/* lumat:cipsi/CIPSI_sources/   
    ssh -t -t lumat << EOL2
    cd cipsi
-   make CLUSTER=true
+   make -B CLUSTER=true
    exit
 EOL2
   fi
@@ -58,7 +58,7 @@ EOL2
      cd "\$WORKDIR"
      tar -zxf cipsi.tar.gz -C cipsi/      
      cd cipsi
-     make CLUSTER=true
+     make -B CLUSTER=true
      exit
 EOL3
   fi
@@ -116,7 +116,7 @@ if [ "$prog" == "c" ] ; then
    rsync -az $CIPSI_ROOT/bin/Autocip13.exe $result
    rsync $CIPSI_ROOT/bin/data/def_grid.dat $result
    cd $result
-   export OMP_NUM_THREADS=4
+   export OMP_NUM_THREADS=1
 #   valgrind --leak-check=yes --track-origins=yes --suppressions=/home/romain/valgrind.supp --log-file="valgrind.out" ./Autocip12<auto.in 
    ./Autocip13.exe<auto.in>cipsi.out   
   fi
@@ -143,7 +143,7 @@ EOL6
   if [ "$Task" == "i" ] ; then
     rsync -az input/ ergon:input/
     rsync -az $CIPSI_ROOT/bin/data/def_grid.dat ergon:input/
-    rsync -az $CIPSI_ROOT/bin/cipsi.ll ada:.
+    rsync -az $CIPSI_ROOT/scripts/cipsi.ll ada:.
     ssh -t -t $Remote << EOL7
     llsubmit cipsi.ll
     llq -u rgdw003

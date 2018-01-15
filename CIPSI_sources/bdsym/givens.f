@@ -1,5 +1,6 @@
       subroutine givens (h,e,v,n,nev,nvec)
       implicit real*8 (a-h,o-x,z)
+      integer smax      
       include 'bd.prm'
 c
 c                  h    matrice a diagonaliser rangee sous la forme d'un

@@ -25,7 +25,7 @@ c      if(ich.ne.0) return
 c                                                                       
 c     ----- calculate c                                                 
       call xyzdip                                                       
-      write(6,*) jetat
+c      write(6,*) jetat
 c                                                                       
 c     ----- electronic contribution to dipole moment -----              
 c                                                                       
@@ -119,7 +119,7 @@ c------------------------------------------------------
       endif                                                             
 2000  continue                                                          
       write(6,*)                                                        
-      write(6,*) ' contribution electronique en ua'                     
+      write(6,*) ' contribution electronique en ua'               
       write(6,9999)                                                     
       do 2020 i=1,ncou                                                  
       write(6,9998)ietat(i),jetat(i),                                   

@@ -5,6 +5,7 @@
 
       subroutine  model(dtab)
       implicitreal*8(a-h,o-p,r-z),logical*4(q)
+      integer smax      
       include 'bd.prm'
       logical*1 qion
       integer*4 nepp,trpp

@@ -237,7 +237,7 @@ subroutine makedata_pshf(opt,workdir,f_pshf,f_temp,f_temp1,prefix,ncore,nelac,mc
          else
            write(io_namelist+rang*100,*)' SZ=0.5,'
          endif  
-	 write(io_namelist+rang*100,*)' GROUP='//group//','        
+	 write(io_namelist+rang*100,*)' GROUP='''//group//''','        
          write(io_namelist+rang*100,'(a200)')text(i)
        else
          write(io_namelist+rang*100,'(a200)')text(i)
@@ -655,15 +655,15 @@ subroutine makedata_pshf(opt,workdir,f_pshf,f_temp,f_temp1,prefix,ncore,nelac,mc
   close(io_namelist2+rang*100)  
  
   ! ajout de la racine de cipsi au chemin des repertoire
-  command= 'sed -i "s# psnl_fil=# psnl_fil='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp
+  command= 'sed -i "s# psnl_fil=''# psnl_fil='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp
   call system(command)
-  command= 'sed -i "s# ps_molcas_fil=# ps_molcas_fil='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp
+  command= 'sed -i "s# ps_molcas_fil=''# ps_molcas_fil='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp
   call system(command)
-  command= 'sed -i "s# f10=# f10='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp
+  command= 'sed -i "s# f10=''# f10='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp
   call system(command)
-  command= 'sed -i "s# psnl_fil=# psnl_fil='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp1
+  command= 'sed -i "s# psnl_fil=''# psnl_fil='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp1
   call system(command)
-  command= 'sed -i "s# ps_molcas_fil=# ps_molcas_fil='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp1
+  command= 'sed -i "s# ps_molcas_fil=''# ps_molcas_fil='''//trim(cipsidir)//'#" '//workdir(1:lwork)//'/'//f_temp1
   call system(command)
   
   return

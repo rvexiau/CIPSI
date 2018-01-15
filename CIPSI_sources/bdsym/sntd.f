@@ -1,5 +1,6 @@
       function sntd(ii,jj)                                              
-      implicit real*8 (a-h,o-x,z),logical*1 (y)                         
+      implicit real*8 (a-h,o-x,z),logical*1 (y)  
+      integer smax      
       include 'bd.prm'                                            
 c        but                                                            
 c                                                                       

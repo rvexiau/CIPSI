@@ -1,20 +1,24 @@
 # Makefile
-NAME=moy
-# FFLAGS= -c -shared-intel -mcmodel=large
-# LFLAGS= -shared-intel -mcmodel=large
-FFLAGS= -c -O2 -mcmodel=large
-LFLAGS= -O2 -L/opt/intel/lib/intel64/ -mcmodel=large
+NAME=moy.exe
 
+ifdef CLUSTER
+    COMP= ifort
+    OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -axAVX,SSE4.2
+    LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core  
+else
+    CHECK := $(shell command -V ifort 2> /dev/null)
+    ifndef CHECK 				# ifort not available use gfortran
+        COMP= gfortran
+        OPT_LVL= -O3 -mcmodel=medium -ffree-line-length-none -std=legacy
+        LIB= -lblas -llapack
+    else					# use ifort
+        COMP= ifort  
+        OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -xhost
+        LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core 
+    endif
+endif
 
-# FFLAGS= -c -i_dynamic -mcmodel=large
-# LFLAGS= -i_dynamic -mcmodel=large
-# LFLAGS= 
-# FFLAGS= -c
-# LFLAGS= -fast
-# FFLAGS= -c -g -O2 -m32
-# LFLAGS= -g -O2 -m32
-COMP=ifort
-OBJS = \
+OBJSmoy = \
 moy.o\
 ai.o\
 combin.o\
@@ -34,14 +38,19 @@ spipr.o\
 stkener.o\
 stk62.o\
 transf.o
-.f.o:
-	$(COMP) $(FFLAGS) $*.f
 
-moy:	$(OBJS)
-	$(COMP) $(LFLAGS) $(OBJS) -o $(NAME)
-	rm -f ../../bin/$(NAME)
-	cp $(NAME) ../../bin/
+all: moy.exe
+
+moy.exe:	$(OBJSmoy)
+	$(COMP) $(OPT_LVL) $(LIB) -o ../../bin/$@ $^ 
+
+.SUFFIXES: .o .f90 .f
+
+.f90.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@	
+.f.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@		
 
 clean:
-	rm $(OBJS) $(NAME)
-  
+	rm $(OBJS) ../../bin/$(NAME)
+

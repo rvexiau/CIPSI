@@ -122,11 +122,16 @@ program auto
   logical :: l_com                                      ! OD 02/10
   logical :: ysort					! RV 02/16
   logical :: phase_sort				! RV 05/17
+  logical :: parity
   logical,dimension(:,:,:,:),allocatable :: l_accept		! RV 05/16
   
    ! timing variables RV 12/15
   integer*8 :: time_begin,time_end,time_begin_iz,time_end_iz,ir
   real(dp)  :: total_time,total_time_iz
+  
+  namelist/psfil/prefix,psnl_fil,ps_molcas_fil
+  namelist/hondo/group,sz,iunt,mcharg,nprint,irest,elec,naxis
+  namelist/vpol/calfa,ymono
  
   call timestamp()
   
@@ -138,10 +143,6 @@ program auto
   spin_str(4)='q'
   spin_str(5)='p'
   spin_str(6)='h'  
-  
-  namelist/psfil/prefix,psnl_fil,ps_molcas_fil
-  namelist/hondo/group,sz,iunt,mcharg,nprint,irest,elec,naxis
-  namelist/vpol/calfa,ymono
 
   data axisname/'x','y','z'/  ! Character Strings for the direction of the electric field
   
@@ -179,6 +180,7 @@ program auto
   case DEFAULT
     write(*,*) 'invalid number of center'
   end select
+
   if(mod(nelac,2)==0) then
     isz=0
   else
@@ -349,7 +351,8 @@ program auto
       imax_s=1000		! maximum numbre of iteration
     endif
     read(5,*) noac_ref,nexmax                                  ! number of active orbital for the initial reference CAS
-    if(MOD(nelac,2).and.nexmax.ge.0) nexmax=nexmax+1		! take into account the virtual electron added by the method
+    parity = mod(nelac,2)
+    if(parity.and.nexmax.ge.0) nexmax=nexmax+1		! take into account the virtual electron added by the method
  
     read( 5, * ) netat_pertu,envp_max ! n_etat_envp, envp maximum apres calcul
     read( 5, * ) tau_init,tau_step ! nbre de det. de reference minimun; tau initial, tau step
@@ -662,8 +665,6 @@ program auto
   call system(command)
   
   close(io_output+rang*100)
-
-  call mkl_thread_free_buffers()
   !$OMP END PARALLEL
   endif
   
@@ -1161,8 +1162,7 @@ program auto
   call system_clock(count=time_end, count_rate=ir)
   total_time=real(time_end - time_begin,kind=8)/real(ir,kind=8)
   write(*,*) 'Computation time : ',total_time,' seconds '
- 
-  call mkl_free_buffers()
+
 end program auto
 
 

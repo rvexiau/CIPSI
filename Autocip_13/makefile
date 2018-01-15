@@ -8,6 +8,8 @@ else
     CHECK := $(shell command -V ifort 2> /dev/null)
     ifndef CHECK 				# ifort not available use gfortran
         COMP= gfortran
+        OPT_LVL= -std=legacy -O3 -openmp -mcmodel=medium -ffree-line-length-none
+        LIB= -lblas -llapack        
     else					# use ifort
         COMP= ifort  
         OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -qopenmp -mkl=parallel -mcmodel=medium -shared-intel -xhost
@@ -20,13 +22,11 @@ OBJSauto = ${Foldauto}timestamp.o ${Foldauto}lhs.o ${Foldauto}io_unit.o ${Foldau
 ${Foldauto}tri_mono.o ${Foldauto}makedata.o ${Foldauto}makedata_pshf.o ${Foldauto}makedata_cip.o ${Foldauto}makedata_ciro.o ${Foldauto}calcul.o\
 ${Foldauto}ffield.o ${Foldauto}utils.o ${Foldauto}sym_check.o ${Foldauto}spin.o
 
-all: clean Autocip13.exe
+all: Autocip13.exe
 
 	
 Autocip13.exe:	$(OBJSauto)
-	$(COMP) $(OPT_LVL) $(LIB) -o $@ $^ 
-	mv $@ ../bin/
-	rm -f *.mod
+	$(COMP) $(OPT_LVL) $(LIB) -o ../bin/$@ $^ 
 
 .SUFFIXES: .o .f90 .f
 
@@ -37,5 +37,5 @@ Autocip13.exe:	$(OBJSauto)
 	
 	
 clean:
-	rm -f ../bin/Autocip13.exe *.mod
+	rm -f ../bin/Autocip13.exe Autocip13.exe *.mod
 

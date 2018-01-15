@@ -11,8 +11,8 @@
 # @ step_name = exec
 # @ dependency = (get_file == 0)
 # @ job_type = serial
-# @ parallel_threads = 32
-# @ as_limit=224gb
+# @ parallel_threads = 8
+# @ as_limit=56gb
 # @ wall_clock_limit=90:00:00
 # @ queue
  

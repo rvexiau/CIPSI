@@ -118,13 +118,13 @@ cRG      integer*2 nttt
        common/cd/r(ncouz*(doa**2)),ndd,ndt,ncf1,ncf2,metat,icf2,ncou, 
      &ibeg(ncouz),ietat(ncouz),jetat(ncouz),ycou(metz,metz), 
      &yiet(metz),yjet(metz)                                             
-      integer*4 title(40),numero(21)                          
+c      integer*4 title(40),numero(21)                          
       dimension ndcip(2*ndimh)
       dimension cmo(doa,doa),rao(doa,doa),rc(doa,doa)       
-      dimension ccc(doa*doa)                                        
-      datatitle/'  ','  ','et','at','s ',6*'  ','or','dr','e ',26*'  '/ 
-      data numero/' 1',' 2',' 3',' 4',' 5',' 6',' 7',' 8',' 9','10',    
-     *'11','12','13','14','15','16','17','18','19','29',' 0'/           
+      dimension ccc(doa*doa) 
+c      datatitle/'  ','  ','et','at','s ',6*'  ','or','dr','e ',26*'  '/ 
+c      data numero/' 1',' 2',' 3',' 4',' 5',' 6',' 7',' 8',' 9','10',    
+c     *'11','12','13','14','15','16','17','18','19','29',' 0'/           
 c      data charnum/'1','2','3','4','5','6','7','8','9'/
       dimension eb(metz2),nttt(nexz)                                    
       namelist/roinp/yprt,ypopul,ymoyen,ycv,
@@ -136,6 +136,7 @@ c      data titre/40*' '/
  9999 format(/,80(1h*),/,8(10h   ciro   ),/,  10x,a25,/,
      * 80(1h*))
       call openf
+
       titre='  '
       lab1='   '
       lab2='   '
@@ -421,14 +422,14 @@ cCc       stop
 c                                                                       
 c  matrice densite dans la base atomique
 c
-      title(16)=numero(21)                                              
+c      title(16)=numero(21)                                              
 c      ipa=1
 c      if(ipa.eq.1) go to 201
       do 200 icou=1,ncou                                                
       m1=ietat(icou)                                                    
       m2=jetat(icou)                                                    
-      title(7)=numero(m1)                                               
-      title(9)=numero(m2)                                               
+c      title(7)=numero(m1)                                               
+c      title(9)=numero(m2)                                               
       do 230 j=1,nao                                                    
       ind=ibeg(icou)                                                   
       do 230 k=1,norb                                                   
@@ -462,7 +463,7 @@ c  calcul de la trace de la matrice densite dans la base moleculaire
 150   rao(i,j)=rij                                                      
 190   continue                                                          
       if(yprt) then                                                     
-      write(6,260) title                                                
+      write(6,260) '****'                                                
       call escriu(rao,nao,nao,doa)                                    
       endif                                                             
 260   format(//5x,'matrice densite en base atomique'/40a2/)             

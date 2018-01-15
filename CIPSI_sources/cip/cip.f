@@ -43,8 +43,6 @@
      3psimp(metz),psivp(metz),hzero(nhefz)                              
       common/giv/nblock(ndetz),nstart(ndetz)                            
       data ibla1,ibla2/0,'=>'/
-      day='        '
-      hour='        '
       call fdate(timeday)
        write(6,9999)timeday
  9999 format(/,80(1h*),/,8(10h  cipsi   ),/,  10x,a25,/,

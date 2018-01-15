@@ -44,7 +44,7 @@ end subroutine fetch_refbd
 
 subroutine copy_file(file,source,dest)
 
-  use iflport
+!  use iflport
   implicit none
 
   character(len=*) :: file,source,dest
@@ -56,14 +56,15 @@ subroutine copy_file(file,source,dest)
   ld=len_trim(dest)
 
   command='cp -f '//source(1:ls)//file(1:lf)//' '//dest(1:ld)//file(1:lf)
-  i_sys = systemqq(command)
+  call system(command)
+!  i_sys = systemqq(command)
 !  write( 6, * ) i_sys,command
 
 end subroutine copy_file
 
 subroutine copy2_file(sourcefile,destfile)
 
-  use iflport
+!  use iflport
   implicit none
 
   character(len=*) :: sourcefile,destfile
@@ -74,7 +75,8 @@ subroutine copy2_file(sourcefile,destfile)
   ld=len_trim(destfile)
 
   command='cp -f '//sourcefile(1:ls)//' '//destfile(1:ld)
-  i_sys = systemqq(command)
+  call system(command)  
+  ! i_sys = systemqq(command)
   ! write( 6, * ) i_sys,command
 
 end subroutine copy2_file

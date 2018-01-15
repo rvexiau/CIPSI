@@ -1,5 +1,6 @@
       program bd
       implicit real*8(a-h,o-p,r-z),logical*4(q)
+      integer smax
       character*26 timeday
       include 'bd.prm'
       character*20 title

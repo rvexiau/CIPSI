@@ -1,33 +1,24 @@
 # Makefile
-NAME=bdsym
+NAME=bdsym.exe
 
-# Parallèle :
-# FFLAGS= -openmp -I$(MKLROOT)/include -c
-# LFLAGS= -openmp -I$(MKLROOT)/include -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lpthread
+ifdef CLUSTER
+    COMP= ifort
+    OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -axAVX,SSE4.2
+    LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core  
+else
+    CHECK := $(shell command -V ifort 2> /dev/null)
+    ifndef CHECK 				# ifort not available use gfortran
+        COMP= gfortran
+        OPT_LVL= -O3 -mcmodel=medium -ffree-line-length-none -std=legacy
+        LIB= -lblas -llapack
+    else					# use ifort
+        COMP= ifort  
+        OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -xhost
+        LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core 
+    endif
+endif
 
-# Séquentiel
-FFLAGS= -I$(MKLROOT)/include -c -O2
-LFLAGS= -O2 -I$(MKLROOT)/include -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread
-
-
-# FFLAGS= -c -fast
-# LFLAGS= -fast
-# FFLAGS= -c -O2 -parallel -ipo -fpp -openmp
-# LFLAGS= -O2 -parallel -ipo -fpp -openmp -L/opt/intel/fce/10.1.015/lib -L/opt/intel/mkl/10.0.1.014/lib/em64t \
-# -lmkl_lapack -lmkl -lguide -lpthread
-# FFLAGS= -c
-# LFLAGS= -L/opt/intel/fce/actual/lib -L/opt/intel/mkl/actual/lib/em64t \
-# -lmkl_lapack -lmkl -lguide -lpthread
-# LFLAGS= -L/opt/intel/fce/actual/lib -L/opt/intel/mkl/actual/lib/em64t \
-# -lmkl_lapack -lmkl_em64t -lguide -lpthread
-# FFLAGS= -c -O2 -parallel -ipo -fpp -openmp
-# LFLAGS= -O2 -parallel -ipo -fpp -openmp -L/opt/intel/fce/actual/lib -L/opt/intel/mkl/actual/lib/em64t \
-# -lmkl_lapack -lmkl_em64t -lguide -lpthread
-# FFLAGS= -c -O2 -m32 
-# LFLAGS= -O2 -m32 
-
-COMP= ifort
-OBJS = \
+OBJSbdsym = \
 bd.o\
 bigdia.o\
 extr.o\
@@ -47,16 +38,18 @@ trf.o\
 wvec.o\
 diagonaliser.o
 
-%.o: %.f
-	$(COMP) $(FFLAGS) $*.f
-%.o: %.f90
-	$(COMP) $(FFLAGS) $*.f90		
-	
-bdsym:	$(OBJS)
-	$(COMP) $(LFLAGS) $(OBJS) -o $(NAME)
-	rm -f ../../bin/$(NAME)
-	cp $(NAME) ../../bin
+all: bdsym.exe
+
+bdsym.exe:	$(OBJSbdsym)
+	$(COMP) $(OPT_LVL) $(LIB) -o ../../bin/$@ $^ 
+
+.SUFFIXES: .o .f90 .f
+
+.f90.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@	
+.f.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@		
 	
 clean:
-	rm $(OBJS) $(NAME)
+	rm $(OBJS) ../../bin/$(NAME)
 

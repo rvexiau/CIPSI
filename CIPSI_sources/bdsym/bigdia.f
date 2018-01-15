@@ -1,5 +1,6 @@
       subroutine  bigdia(cv,hcv)
       implicit real*8(a-h,o-p,r-z),logical*4(q)
+      integer smax
       include 'bd.prm'
 c       note : state with absolute correlation energy 
 c       lower than 1d-8 are discarded (set to 9d0)

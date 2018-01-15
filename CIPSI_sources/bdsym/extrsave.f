@@ -1,6 +1,7 @@
       subroutine extr(ndet,nv,v,vr,e,qictot,ityp,iiii)
       implicit real*8(a-h,o-p,r-z),logical*4(q)
       logical*1 qion
+      integer smax
       include 'bd.prm'
 c calcul d'hamiltonien effectif dans la base de reference
       integer*4 ne,nd,tr,pa

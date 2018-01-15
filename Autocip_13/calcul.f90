@@ -224,7 +224,7 @@ end
 
 subroutine calcul_som(iz,bindir,lb,workdir,lw,threaddir,f_som,prefix,rang,bash_command)
 !  procedure pour SOM
-  use iflport
+!  use iflport
   use io_unit
   implicit none
   integer, parameter :: dp=kind(1.d0)
@@ -479,7 +479,7 @@ end
 
 subroutine calcul_hdiab(iz,bindir,lb,workdir,lw,threaddir,f_hdiab,sym,prefix,rang,bash_command)
 !  procedure pour SOM
-  use iflport
+!  use iflport
   use io_unit
   implicit none
   integer, parameter :: dp=kind(1.d0)

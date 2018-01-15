@@ -9,7 +9,7 @@ Created on Sun Oct 29 18:51:37 2017
 import os
 from shutil import copyfile
 import unicodedata
-from database.create_atom import atom
+from mypython.database.create_atom import atom
 
 
 core = int(input("number of core : "))
@@ -173,10 +173,10 @@ elif(electron==4):
     spin = "1,0,1,0,1,0"
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-template_file = dir_path+"../template/auto.in"
-template_name = dir_path+"../template/name.dat"
-template_dip = dir_path+"../template/dip.dat"
-template_sym = dir_path+"../template/sym.dat"
+template_file = dir_path+"/../template/auto.in"
+template_name = dir_path+"/../template/name.dat"
+template_dip = dir_path+"/../template/dip.dat"
+template_sym = dir_path+"/../template/sym.dat"
 out_file = 'input/auto.in'
 out_name = 'input/'+name+'.dat'
 out_namef = 'input/'+name+'-nof.dat'

@@ -5,6 +5,7 @@
 
       subroutine extr(ndet,nv,v,vr,e,qictot,ityp,iiii)
       implicit real*8(a-h,o-p,r-z),logical*4(q)
+      integer smax
       character*40 typener
       logical*1 qion
       include 'bd.prm'

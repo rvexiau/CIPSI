@@ -1,13 +1,24 @@
 # Makefile
-NAME=rcut
-# FFLAGS= -c -O0 -check uninit -CB
-# LFLAGS= -O0 -check all -check uninit -CB
-# FFLAGS= -c -fast
-# LFLAGS= -fast
-FFLAGS= -I$(MKLROOT)/include -c -O2 -mcmodel=large
-LFLAGS= -O2 -I$(MKLROOT)/include -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -mcmodel=large
-COMP=ifort
-OBJS = \
+NAME=rcut.exe
+
+ifdef CLUSTER
+    COMP= ifort
+    OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -axAVX,SSE4.2
+    LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core  
+else
+    CHECK := $(shell command -V ifort 2> /dev/null)
+    ifndef CHECK 				# ifort not available use gfortran
+        COMP= gfortran
+        OPT_LVL= -O3 -mcmodel=medium -ffree-line-length-none -std=legacy
+        LIB= -lblas -llapack
+    else					# use ifort
+        COMP= ifort  
+        OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -xhost
+        LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core 
+    endif
+endif
+
+OBJSrcut = \
  casgam.o\
  caspgam.o\
  caspgax.o\
@@ -32,15 +43,20 @@ OBJS = \
  rcut.o\
  set.o\
  varcom.o
-.f.o:
-	$(COMP) $(FFLAGS) $*.f
 
-rcut:	$(OBJS)
-	$(COMP) $(LFLAGS) $(OBJS) -o $(NAME)
-	rm -f ../../bin/$(NAME)
-	cp $(NAME) ../../bin/
+all: rcut.exe
+
+rcut.exe:	$(OBJSrcut)
+	$(COMP) $(OPT_LVL) $(LIB) -o ../../bin/$@ $^ 
+	
+.SUFFIXES: .o .f90 .f
+
+.f90.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@	
+.f.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@	
 	
 clean:
-	rm $(OBJS) $(NAME)
-  
+	rm $(OBJS) ../../bin/$(NAME)
+
 

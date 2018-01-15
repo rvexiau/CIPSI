@@ -5,6 +5,7 @@
 
       subroutine  low(cv,ncf)
       implicitreal*8(a-h,o-p,r-z),logical*4(q)
+      integer smax      
       include 'bd.prm'
       common/gest/spert,eold(netm),cold(ncpm,netm),ind(ncpm),qz(ncpm)
       common/info/mcf,ncper,nca,qnorm,qwa,qwb,mbuf,metat2,netat,niter

@@ -1,13 +1,24 @@
 # Makefile
-NAME=fock
-FFLAGS= -c -O2 -mcmodel=large
-LFLAGS= -O2 -mcmodel=large
-# FFLAGS= -c -fast
-# LFLAGS= -fast
-# FFLAGS= -c  -O  
-# LFLAGS= 
-COMP=ifort
-OBJS = \
+NAME=fock.exe
+
+ifdef CLUSTER
+    COMP= ifort
+    OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -axAVX,SSE4.2
+    LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core  
+else
+    CHECK := $(shell command -V ifort 2> /dev/null)
+    ifndef CHECK 				# ifort not available use gfortran
+        COMP= gfortran
+        OPT_LVL= -O3 -mcmodel=medium -ffree-line-length-none -std=legacy
+        LIB= -lblas -llapack
+    else					# use ifort
+        COMP= ifort  
+        OPT_LVL= -I$(MKLROOT)/include -O3 -heap-arrays -mkl=sequential -mcmodel=medium -shared-intel -xhost
+        LIB= -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core 
+    endif
+endif
+
+OBJSfock = \
  ai.o\
  fock.o\
  itijkl_new.o\
@@ -20,14 +31,19 @@ OBJS = \
  stkener.o\
  wijkl_new.o\
  wijkl_stan.o
-.f.o:
-	$(COMP) $(FFLAGS) $*.f
+ 
+all: fock.exe
+	
+fock.exe:	$(OBJSfock)
+	$(COMP) $(OPT_LVL) $(LIB) -o ../../bin/$@ $^ 
+	
+.SUFFIXES: .o .f90 .f
 
-fock:	$(OBJS)
-	$(COMP) $(LFLAGS) $(OBJS) -o $(NAME)
-	rm -f ../../bin/$(NAME)
-	cp $(NAME) ../../bin/
+.f90.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@	
+.f.o:
+	$(COMP) $(OPT_LVL) -c $^ -o $@	
 
 clean:
-	rm $(OBJS) $(NAME)
+	rm $(OBJS) ../../$(NAME)
   

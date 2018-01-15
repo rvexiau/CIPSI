@@ -16,7 +16,7 @@ subroutine makedata_cip(workdir,f_sym,f_bd,prefix,group,isymat,sym,nusym,itsym,m
   integer, dimension(:), allocatable :: numac
   character(len=*) :: workdir,f_bd,f_sym
   character(len=*) :: sym,group
- character(len=180) :: f_bd_loop  
+  character(len=180) :: f_bd_loop  
   character(len=10) :: prefix
   logical :: l_ref,qictot
   integer,dimension(14,14) :: mult_tab
@@ -114,7 +114,7 @@ subroutine makedata_cip_template(workdir,lwork,f_sym,f_bd,prefix,group,isymat,sy
   character(len=7) :: n_list,n_list_c
   character(len=10) :: prefix
   character(len=3) :: cex3  
-  logical :: ymoyen,l_ref,qhef,qictot
+  logical :: ymoyen,l_ref,qhef,qictot,parity
 
   iselec=1
   ymoyen=.true.
@@ -212,7 +212,8 @@ subroutine makedata_cip_template(workdir,lwork,f_sym,f_bd,prefix,group,isymat,sy
   write(io_namelist+rang*100,'(a7,i0,a1)')' NELAC=',nelac,','  !insertion de NELAC=, en fin de NAMELIST
   write(io_namelist+rang*100,'(a8)')' YBRD=F,'  !insertion de YBRD=, en fin de NAMELIST  
   if(nexmax.gt.0) write(io_namelist+rang*100,'(a7,i0,a1)')' NEMAX=',nexmax,','  !insertion de NEMAX=, en fin de NAMELIST  
-  if(MOD(nelac,2)) then
+  parity = MOD(nelac,2)
+  if(parity) then
     write(io_namelist+rang*100,'(a8)')' YION=T,'  !insertion de YION=, en fin de NAMELIST 
   else
     write(io_namelist+rang*100,'(a8)')' YION=F,'  !insertion de YION=, en fin de NAMELIST 
