@@ -32,9 +32,15 @@ OBJShdiab = \
  wrt.o\
  wrtvec.o
  
-all: hdiab.exe
+OBJSsom = \
+ som.o 
+
+all: hdiab.exe som.exe
 
 hdiab.exe:	$(OBJShdiab)
+	$(COMP) $(OPT_LVL) $(LIB) -o ../../bin/$@ $^ 
+	
+som.exe:	$(OBJSsom)
 	$(COMP) $(OPT_LVL) $(LIB) -o ../../bin/$@ $^ 
 	
 .SUFFIXES: .o .f90 .f

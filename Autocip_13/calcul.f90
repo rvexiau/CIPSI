@@ -243,6 +243,8 @@ subroutine calcul_som(iz,bindir,lb,workdir,lw,threaddir,f_som,prefix,rang,bash_c
   write(cz,'(i0)')iz
   kz=longu(cz)
   lz=len_trim(cz)
+  command='rm -f *_som'
+  call system(trim(dir)//command)
 
   command=bindir(1:lb)//'/som.exe<'//f_som(1:lsom)//'>'//path(1:lp-1)//'.som'//cz(kz:kz+lz)
   call bash_exec(command,dir,'som',io_output+rang*100,bash_command)

@@ -53,10 +53,10 @@ t,0.8                           !try to guess tdm sign
 
 
 :diabatization:
-'rbca.dat'
-50
-60
-2
-1,1
-1,1
+'{namehdiab}.dat'
+45.0                    !distance at which reference states are calculated
+1                    !HEFINP: noca (number of occupying orbitals at atom A) === 1 (always one)
+2                    !HEFINP: nrot (number of Orbitals to rotate)
+1,2                  !HEFINP: num
+1,2                  !HEFINP: numr
 

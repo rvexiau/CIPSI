@@ -131,6 +131,7 @@ electron-=charge
 
 namesym = name+"sym"
 namedip = name+"dip"
+namehdiab = name+"hdiab"
 if(orbf):nameorb=name
 else:nameorb=name+'-nof'
 atoms=atoms[:-1]
@@ -195,6 +196,7 @@ with open(template_file,"r") as file_in:
         ,name = nameorb
         ,namesym = namesym
         ,namedip = namedip
+        ,namehdiab = namehdiab
         ,group = group
         ,nsym = nsym
         ,sym = sym

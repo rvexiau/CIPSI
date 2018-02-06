@@ -167,7 +167,6 @@ spinsym.exe:
 hdiab.exe:	
 	$(MAKE) -e -C CIPSI_sources/hdiab 
 	
-	
 
 # bd.exe:	$(OBJSbd)
 # 	$(COMP) $(OPT_LVL) $(LIB) -o bin/$@ $^ 
